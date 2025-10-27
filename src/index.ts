@@ -2,10 +2,25 @@
 import dotenv from 'dotenv';
 dotenv.config();
 
+// CRITICAL: Import reflect-metadata before inversify
+import 'reflect-metadata';
+
 import { Client, GatewayIntentBits } from 'discord.js';
-import { APIClient, ApiError } from './client';
-import { guildCreateEvent } from './events/guildCreate';
-import { guildDeleteEvent } from './events/guildDelete';
+import { createContainer } from './config/container';
+import { TYPES } from './config/types';
+import { GuildService } from './services/guild.service';
+import { ApiService } from './services/api.service';
+import { ConfigService } from './services/config.service';
+import { createGuildCreateEvent } from './events/guildCreate';
+import { createGuildDeleteEvent } from './events/guildDelete';
+import { logger } from './utils/logger';
+
+// Create DI container
+const container = createContainer();
+
+// Get services from container
+const guildService = container.get<GuildService>(TYPES.GuildService);
+const apiService = container.get<ApiService>(TYPES.ApiService);
 
 // Create Discord client
 const client = new Client({
@@ -15,55 +30,52 @@ const client = new Client({
   ],
 });
 
-// Create API client AFTER imports (not as module-level export)
-const apiClient = new APIClient();
-
 // Error handling for unhandled promise rejections
 process.on('unhandledRejection', (reason: any, promise: Promise<any>) => {
-  console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+  logger.error('Unhandled Rejection at:', promise, 'reason:', reason);
 });
 
 // Error handling for uncaught exceptions
 process.on('uncaughtException', (error: Error) => {
-  console.error('Uncaught Exception:', error);
+  logger.error('Uncaught Exception:', error);
   process.exit(1);
 });
 
 // Handle Discord client errors
 client.on('error', (error: Error) => {
-  console.error('Discord client error:', error);
+  logger.error('Discord client error:', error);
 });
 
 // Handle warnings
 client.on('warn', (info: string) => {
-  console.warn('Discord client warning:', info);
+  logger.warn('Discord client warning:', info);
 });
 
-// Register guild event handlers
-client.on('guildCreate', guildCreateEvent.execute);
-client.on('guildDelete', guildDeleteEvent.execute);
+// Register guild event handlers with injected services
+client.on('guildCreate', createGuildCreateEvent(guildService).execute);
+client.on('guildDelete', createGuildDeleteEvent(guildService).execute);
 
 // Bot ready event - use 'clientReady' for Discord.js v14
-client.once('clientReady', async () => {
-  console.log(`Logged in as ${client.user?.tag}`);
+client.once('ready', async () => {
+  logger.success(`Logged in as ${client.user?.tag}`);
   
   // Test API connection
   try {
-    const health = await apiClient.healthCheck();
-    console.log('✅ API connection successful:', health);
+    const health = await apiService.healthCheck();
+    logger.success('API connection successful:', health);
   } catch (error: any) {
     if (error instanceof Error && 'statusCode' in error) {
-      const apiError = error as ApiError;
-      console.error('❌ API connection failed:', {
-        message: apiError.message,
-        statusCode: apiError.statusCode,
-        code: apiError.code,
+      logger.error('API connection failed:', {
+        message: error.message,
+        statusCode: (error as any).statusCode,
+        code: (error as any).code,
       });
     } else {
-      console.error('❌ API connection failed:', error.message);
+      logger.error('API connection failed:', error.message);
     }
   }
 });
 
 // Login to Discord
-client.login(process.env.DISCORD_TOKEN);
+const configService = container.get<ConfigService>(TYPES.ConfigService);
+client.login(configService.discordToken);
