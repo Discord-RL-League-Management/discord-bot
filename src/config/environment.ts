@@ -8,6 +8,7 @@ const envSchema = z.object({
   DISCORD_TOKEN: z.string().min(1, 'DISCORD_TOKEN is required'),
   API_BASE_URL: z.string().url('API_BASE_URL must be a valid URL'),
   API_KEY: z.string().min(1, 'API_KEY is required'),
+  DASHBOARD_URL: z.string().url('DASHBOARD_URL must be a valid URL').optional(),
 });
 
 export type EnvironmentConfig = z.infer<typeof envSchema>;
