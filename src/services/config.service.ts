@@ -26,5 +26,9 @@ export class ConfigService {
   get apiKey(): string {
     return this.config.API_KEY;
   }
+
+  get dashboardUrl(): string | undefined {
+    return this.config.DASHBOARD_URL;
+  }
 }
 

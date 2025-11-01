@@ -17,5 +17,21 @@ export const TYPES = {
   
   // Business logic services
   GuildService: Symbol.for('GuildService'),
+  MemberService: Symbol.for('MemberService'),
+  
+  // Utility services
+  ErrorClassificationService: Symbol.for('ErrorClassificationService'),
+  ChannelFinderService: Symbol.for('ChannelFinderService'),
+  GuildSyncService: Symbol.for('GuildSyncService'),
+  
+  // Command services
+  CommandRegistryService: Symbol.for('CommandRegistryService'),
+  CommandDeploymentService: Symbol.for('CommandDeploymentService'),
+  ConfigCommand: Symbol.for('ConfigCommand'),
+  HelpCommand: Symbol.for('HelpCommand'),
+  
+  // Permission services
+  PermissionValidatorService: Symbol.for('PermissionValidatorService'),
+  PermissionLoggerService: Symbol.for('PermissionLoggerService'),
 };
 

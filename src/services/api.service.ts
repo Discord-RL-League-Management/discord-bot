@@ -2,6 +2,7 @@ import { injectable, inject } from 'inversify';
 import axios, { AxiosInstance, AxiosError } from 'axios';
 import { ApiError, HealthCheckResponse, CreateGuildDto } from '@league-management/shared-types';
 import { ConfigService } from './config.service';
+import { TYPES } from '../config/types';
 import { logger } from '../utils/logger';
 
 /**
@@ -15,7 +16,7 @@ import { logger } from '../utils/logger';
 export class ApiService {
   private client: AxiosInstance;
 
-  constructor(@inject(ConfigService) private configService: ConfigService) {
+  constructor(@inject(TYPES.ConfigService) private configService: ConfigService) {
     this.client = axios.create({
       baseURL: this.configService.apiBaseUrl,
       timeout: 10000,
@@ -73,6 +74,20 @@ export class ApiService {
   }
 
   /**
+   * Upsert guild in database (create or update)
+   * Single Responsibility: HTTP call to upsert guild
+   */
+  async upsertGuild(guildData: CreateGuildDto): Promise<any> {
+    try {
+      const response = await this.client.post('/internal/guilds/upsert', guildData);
+      return response.data;
+    } catch (error: any) {
+      logger.error('Failed to upsert guild:', error);
+      throw error;
+    }
+  }
+
+  /**
    * Remove guild from database (soft delete)
    */
   async removeGuild(guildId: string): Promise<any> {
@@ -81,6 +96,64 @@ export class ApiService {
       return response.data;
     } catch (error: any) {
       logger.error(`Failed to remove guild ${guildId}:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Create guild member in database
+   * Single Responsibility: HTTP call to create member
+   */
+  async createGuildMember(guildId: string, memberData: {
+    userId: string;
+    username: string;
+    roles: string[];
+  }): Promise<any> {
+    try {
+      const response = await this.client.post(
+        `/internal/guilds/${guildId}/members`,
+        memberData
+      );
+      return response.data;
+    } catch (error: any) {
+      logger.error(`Failed to create guild member ${memberData.userId}:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Update guild member in database
+   * Single Responsibility: HTTP call to update member
+   */
+  async updateGuildMember(
+    guildId: string,
+    userId: string,
+    updateData: Partial<{ username: string; roles: string[] }>
+  ): Promise<any> {
+    try {
+      const response = await this.client.patch(
+        `/internal/guilds/${guildId}/members/${userId}`,
+        updateData
+      );
+      return response.data;
+    } catch (error: any) {
+      logger.error(`Failed to update guild member ${userId}:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Remove guild member from database
+   * Single Responsibility: HTTP call to remove member
+   */
+  async removeGuildMember(guildId: string, userId: string): Promise<any> {
+    try {
+      const response = await this.client.delete(
+        `/internal/guilds/${guildId}/members/${userId}`
+      );
+      return response.data;
+    } catch (error: any) {
+      logger.error(`Failed to remove guild member ${userId}:`, error);
       throw error;
     }
   }

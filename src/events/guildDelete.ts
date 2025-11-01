@@ -14,3 +14,13 @@ export function createGuildDeleteEvent(guildService: GuildService) {
     },
   };
 }
+
+
+
+
+
+
+
+
+
+

@@ -12,17 +12,26 @@ export class DiscordMessageService {
   /**
    * Create welcome embed when bot joins a guild
    */
-  createWelcomeEmbed(): EmbedBuilder {
-    return new EmbedBuilder()
+  createWelcomeEmbed(dashboardUrl?: string): EmbedBuilder {
+    const embed = new EmbedBuilder()
       .setTitle('🚀 Rocket League Bot Joined!')
       .setDescription("I'm ready to help manage your Rocket League leagues!")
-      .addFields(
+      .setColor(0x00ff00);
+    
+    if (dashboardUrl) {
+      embed.addFields(
+        { name: '🌐 Dashboard', value: `[Click here to access the dashboard](${dashboardUrl})` },
         { name: '⚙️ Setup', value: 'Use `/config` to configure bot settings' },
-        { name: '📖 Help', value: 'Use `/help` to see available commands' },
-        { name: '🌐 Dashboard', value: 'Visit the web dashboard to manage leagues' }
-      )
-      .setColor(0x00ff00)
-      .setFooter({ text: 'Use /config to get started!' });
+        { name: '📖 Help', value: 'Use `/help` to see available commands' }
+      );
+    } else {
+      embed.addFields(
+        { name: '⚙️ Setup', value: 'Use `/config` to configure bot settings' },
+        { name: '📖 Help', value: 'Use `/help` to see available commands' }
+      );
+    }
+    
+    return embed.setFooter({ text: 'Use /config to get started!' });
   }
 
   /**
