@@ -9,7 +9,8 @@
     "build": "tsc",
     "start:prod": "node dist/index.js",
     "test": "jest",
-    "test:watch": "jest --watch"
+    "test:watch": "jest --watch",
+    "export-messages": "tsx src/utils/export-messages.ts"
   },
   "keywords": [
     "discord",
