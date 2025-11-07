@@ -29,9 +29,14 @@ export const TYPES = {
   CommandDeploymentService: Symbol.for('CommandDeploymentService'),
   ConfigCommand: Symbol.for('ConfigCommand'),
   HelpCommand: Symbol.for('HelpCommand'),
+  RegisterCommand: Symbol.for('RegisterCommand'),
+  ProcessNextTrackerCommand: Symbol.for('ProcessNextTrackerCommand'),
   
   // Permission services
   PermissionValidatorService: Symbol.for('PermissionValidatorService'),
   PermissionLoggerService: Symbol.for('PermissionLoggerService'),
+  
+  // Cooldown service
+  CooldownService: Symbol.for('CooldownService'),
 };
 

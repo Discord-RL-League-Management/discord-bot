@@ -29,14 +29,16 @@ export class ConfigCommand implements ICommand {
 
   async execute(interaction: ChatInputCommandInteraction): Promise<void> {
     const dashboardUrl = this.configService.dashboardUrl;
+    const guildId = interaction.guildId;
     
     const embed = new EmbedBuilder()
       .setTitle('⚙️ Bot Configuration')
       .setColor(0x00ff00);
     
-    if (dashboardUrl) {
+    if (dashboardUrl && guildId) {
+      const guildDashboardUrl = `${dashboardUrl}?guild=${guildId}`;
       embed.setDescription(
-        `Configure the bot using the web dashboard:\n\n[Open Dashboard](${dashboardUrl})`
+        `Configure the bot using the web dashboard:\n\n[Open Dashboard](${guildDashboardUrl})`
       );
     } else {
       embed.setDescription(

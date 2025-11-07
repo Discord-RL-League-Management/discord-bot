@@ -18,10 +18,15 @@ import { CommandRegistryService } from '../commands/command-registry.service';
 import { CommandDeploymentService } from '../commands/command-deployment.service';
 import { ConfigCommand } from '../commands/handlers/config.command';
 import { HelpCommand } from '../commands/handlers/help.command';
+import { RegisterCommand } from '../commands/handlers/register.command';
+import { ProcessNextTrackerCommand } from '../commands/handlers/process-next-tracker.command';
 
 // Permission services
 import { PermissionValidatorService } from '../services/permission-validator.service';
 import { PermissionLoggerService } from '../services/permission-logger.service';
+
+// Cooldown service
+import { CooldownService } from '../services/cooldown.service';
 
 /**
  * Dependency Injection Container Setup
@@ -49,10 +54,15 @@ export function createContainer(): Container {
   container.bind<CommandDeploymentService>(TYPES.CommandDeploymentService).to(CommandDeploymentService).inSingletonScope();
   container.bind<ConfigCommand>(TYPES.ConfigCommand).to(ConfigCommand).inSingletonScope();
   container.bind<HelpCommand>(TYPES.HelpCommand).to(HelpCommand).inSingletonScope();
+  container.bind<RegisterCommand>(TYPES.RegisterCommand).to(RegisterCommand).inSingletonScope();
+  container.bind<ProcessNextTrackerCommand>(TYPES.ProcessNextTrackerCommand).to(ProcessNextTrackerCommand).inSingletonScope();
 
   // Permission services
   container.bind<PermissionValidatorService>(TYPES.PermissionValidatorService).to(PermissionValidatorService).inSingletonScope();
   container.bind<PermissionLoggerService>(TYPES.PermissionLoggerService).to(PermissionLoggerService).inSingletonScope();
+
+  // Cooldown service
+  container.bind<CooldownService>(TYPES.CooldownService).to(CooldownService).inSingletonScope();
 
   return container;
 }

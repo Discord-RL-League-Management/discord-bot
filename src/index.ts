@@ -17,6 +17,8 @@ import { CommandRegistryService } from './commands/command-registry.service';
 import { CommandDeploymentService } from './commands/command-deployment.service';
 import { ConfigCommand } from './commands/handlers/config.command';
 import { HelpCommand } from './commands/handlers/help.command';
+import { RegisterCommand } from './commands/handlers/register.command';
+import { ProcessNextTrackerCommand } from './commands/handlers/process-next-tracker.command';
 import { createGuildCreateEvent } from './events/guildCreate';
 import { createGuildDeleteEvent } from './events/guildDelete';
 import { createGuildMemberAddEvent } from './events/guildMemberAdd';
@@ -25,6 +27,7 @@ import { createGuildMemberUpdateEvent } from './events/guildMemberUpdate';
 import { createInteractionCreateEvent } from './events/interactionCreate';
 import { PermissionValidatorService } from './services/permission-validator.service';
 import { PermissionLoggerService } from './services/permission-logger.service';
+import { CooldownService } from './services/cooldown.service';
 import { logger } from './utils/logger';
 
 // Create DI container
@@ -41,20 +44,28 @@ const commandRegistry = container.get<CommandRegistryService>(TYPES.CommandRegis
 const commandDeployment = container.get<CommandDeploymentService>(TYPES.CommandDeploymentService);
 const configCommand = container.get<ConfigCommand>(TYPES.ConfigCommand);
 const helpCommand = container.get<HelpCommand>(TYPES.HelpCommand);
+const registerCommand = container.get<RegisterCommand>(TYPES.RegisterCommand);
+const processNextTrackerCommand = container.get<ProcessNextTrackerCommand>(TYPES.ProcessNextTrackerCommand);
 
 // Get permission services from container
 const permissionValidator = container.get<PermissionValidatorService>(TYPES.PermissionValidatorService);
 const permissionLogger = container.get<PermissionLoggerService>(TYPES.PermissionLoggerService);
 
+// Get cooldown service from container
+const cooldownService = container.get<CooldownService>(TYPES.CooldownService);
+
 // Register commands
 commandRegistry.register(configCommand);
 commandRegistry.register(helpCommand);
+commandRegistry.register(registerCommand);
+commandRegistry.register(processNextTrackerCommand);
 
 // Create Discord client
 const client = new Client({
   intents: [
     GatewayIntentBits.Guilds,
     GatewayIntentBits.GuildMembers,
+    GatewayIntentBits.MessageContent,
   ],
 });
 
@@ -89,7 +100,7 @@ client.on('guildMemberRemove', createGuildMemberRemoveEvent(memberService).execu
 client.on('guildMemberUpdate', createGuildMemberUpdateEvent(memberService).execute);
 
 // Register interaction handler with permission services
-client.on('interactionCreate', createInteractionCreateEvent(commandRegistry, permissionValidator, permissionLogger).execute);
+client.on('interactionCreate', createInteractionCreateEvent(commandRegistry, permissionValidator, permissionLogger, apiService, cooldownService).execute);
 
 // Bot ready event - use 'clientReady' for Discord.js v14
 client.once('ready', async () => {

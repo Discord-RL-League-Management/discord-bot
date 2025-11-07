@@ -14,7 +14,7 @@ import { logger } from '../utils/logger';
  */
 @injectable()
 export class ApiService {
-  private client: AxiosInstance;
+  public client: AxiosInstance;
 
   constructor(@inject(TYPES.ConfigService) private configService: ConfigService) {
     this.client = axios.create({
@@ -154,6 +154,20 @@ export class ApiService {
       return response.data;
     } catch (error: any) {
       logger.error(`Failed to remove guild member ${userId}:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get guild settings from database
+   * Single Responsibility: HTTP call to get settings
+   */
+  async getGuildSettings(guildId: string): Promise<any> {
+    try {
+      const response = await this.client.get(`/internal/guilds/${guildId}/settings`);
+      return response.data;
+    } catch (error: any) {
+      logger.error(`Failed to get guild settings ${guildId}:`, error);
       throw error;
     }
   }
