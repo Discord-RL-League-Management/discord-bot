@@ -1,6 +1,7 @@
 export interface MemberData {
   userId: string;
   username: string;
+  nickname?: string;
   guildId: string;
   guildName: string;
   roles: string[];
@@ -9,6 +10,7 @@ export interface MemberData {
 export interface MemberUpdateData {
   userId: string;
   username: string;
+  nickname?: string;
   guildId: string;
   guildName: string;
   oldRoles: string[];

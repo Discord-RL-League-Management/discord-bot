@@ -21,6 +21,12 @@ export class MemberService {
    * Single Responsibility: Orchestrate member join flow
    */
   async handleMemberJoin(member: GuildMember): Promise<void> {
+    // Skip bots
+    if (member.user.bot) {
+      logger.debug(`Skipping bot join: ${member.user.username}`);
+      return;
+    }
+
     const memberData = DiscordMemberAdapter.toMemberData(member);
     await this.processMemberJoin(memberData);
   }
@@ -40,6 +46,7 @@ export class MemberService {
       await this.apiService.createGuildMember(data.guildId, {
         userId: data.userId,
         username: data.username,
+        nickname: data.nickname,
         roles: data.roles,
       });
 
@@ -79,6 +86,12 @@ export class MemberService {
    * Single Responsibility: Orchestrate member update flow
    */
   async handleMemberUpdate(oldMember: GuildMember, newMember: GuildMember): Promise<void> {
+    // Skip bots
+    if (newMember.user.bot) {
+      logger.debug(`Skipping bot update: ${newMember.user.username}`);
+      return;
+    }
+
     const updateData = DiscordMemberAdapter.toMemberUpdateData(oldMember, newMember);
     await this.processMemberUpdate(updateData);
   }
@@ -101,6 +114,7 @@ export class MemberService {
 
         await this.apiService.updateGuildMember(data.guildId, data.userId, {
           username: data.username,
+          nickname: data.nickname,
           roles,
         });
 

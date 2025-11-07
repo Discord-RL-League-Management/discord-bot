@@ -6,6 +6,7 @@ export class DiscordMemberAdapter {
     return {
       userId: member.user.id,
       username: member.user.username,
+      nickname: member.nickname || undefined,
       guildId: member.guild.id,
       guildName: member.guild.name,
       roles: Array.from(member.roles.cache.keys())
@@ -17,6 +18,7 @@ export class DiscordMemberAdapter {
     return {
       userId: newMember.user.id,
       username: newMember.user.username,
+      nickname: newMember.nickname || undefined,
       guildId: newMember.guild.id,
       guildName: newMember.guild.name,
       oldRoles: Array.from(oldMember.roles.cache.keys()),

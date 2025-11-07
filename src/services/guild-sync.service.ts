@@ -43,10 +43,22 @@ export class GuildSyncService {
         () => {
           result.synced++;
         },
-        (error) => {
+        (error: any) => {
           result.failed++;
           result.errors.push({ guildId: guild.id, error });
-          logger.error(`Failed to sync guild ${guild.name} (${guild.id}):`, error);
+          // Enhanced error logging with full context
+          logger.error(`Failed to sync guild ${guild.name} (${guild.id}):`, {
+            message: error.message,
+            statusCode: error.statusCode,
+            code: error.code,
+            details: error.details,
+            guildInfo: {
+              id: guild.id,
+              name: guild.name,
+              ownerId: guild.ownerId,
+              memberCount: guild.memberCount,
+            },
+          });
         }
       )
     );
@@ -61,24 +73,72 @@ export class GuildSyncService {
   }
 
   /**
-   * Sync a single guild with database
+   * Sync a single guild with database atomically
    * Single Responsibility: Single guild synchronization
+   * 
+   * Fetches all members from Discord once and syncs guild with all members
+   * in a single atomic API call, eliminating race conditions.
    */
   async syncGuild(guild: Guild): Promise<void> {
     try {
       logger.info(`Syncing guild: ${guild.name} (${guild.id})`);
 
-      await this.apiService.upsertGuild({
+      // Fetch all members and roles from Discord once
+      // Discord.js handles pagination and rate limits internally
+      const members = await guild.members.fetch();
+      await guild.roles.fetch();
+
+      // Transform to API format, filtering out bots and @everyone role
+      const memberData = Array.from(members.values())
+        .filter(member => !member.user.bot) // Exclude bots
+        .map(member => ({
+          userId: member.user.id,
+          username: member.user.username,
+          globalName: member.user.globalName || undefined,
+          avatar: member.user.avatar || undefined,
+          nickname: member.nickname || undefined,
+          roles: Array.from(member.roles.cache.keys())
+            .filter(roleId => roleId !== guild.id), // Exclude @everyone role (guild ID)
+        }));
+
+      // Prepare guild data
+      const guildData = {
         id: guild.id,
         name: guild.name,
         icon: guild.icon || undefined,
         ownerId: guild.ownerId,
         memberCount: guild.memberCount,
-      });
+      };
 
-      logger.info(`Successfully synced guild: ${guild.name}`);
-    } catch (error) {
-      logger.error(`Error syncing guild ${guild.id}:`, error);
+      // Fetch all roles and detect admin roles (roles with ADMINISTRATOR permission)
+      const discordRoles = Array.from(guild.roles.cache.values());
+      const adminRoles = discordRoles
+        .filter(role => role.permissions.has('Administrator'))
+        .map(role => ({ id: role.id, name: role.name }));
+
+      // Prepare roles data for settings
+      const rolesData = adminRoles.length > 0 ? { admin: adminRoles } : undefined;
+
+      // Atomically sync guild with all members and roles in single API call
+      await this.apiService.syncGuildWithMembersAndRoles(guild.id, guildData, memberData, rolesData);
+
+      logger.success(
+        `Successfully synced guild ${guild.name} with ${memberData.length} members${adminRoles.length > 0 ? ` and ${adminRoles.length} admin role(s)` : ''}`
+      );
+    } catch (error: any) {
+      // Enhanced error logging with full context
+      logger.error(`Error syncing guild ${guild.name} (${guild.id}):`, {
+        message: error.message,
+        statusCode: error.statusCode,
+        code: error.code,
+        details: error.details,
+        guildInfo: {
+          id: guild.id,
+          name: guild.name,
+          ownerId: guild.ownerId,
+          memberCount: guild.memberCount,
+        },
+      });
       throw error;
     }
   }
