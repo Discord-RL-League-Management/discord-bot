@@ -1,0 +1,55 @@
+# Dependencies
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Build artifacts
+dist/
+*.tsbuildinfo
+
+# Test files
+test/
+*.test.ts
+*.test.js
+*.spec.ts
+*.spec.js
+coverage/
+.nyc_output/
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# Git
+.git/
+.gitignore
+.gitattributes
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Documentation
+docs/
+*.md
+README*
+
+# Build configuration (for development)
+jest.config.js
+# Note: tsconfig.json is needed for build, but will be copied explicitly in Dockerfile
+
+# Logs
+logs/
+*.log
+
+# Misc
+.cache/
+.temp/
+tmp/
+
