@@ -41,12 +41,13 @@ export class RegisterCommand implements ICommand {
     await interaction.deferReply({ ephemeral: true });
 
     try {
-      // Call internal API to register tracker (bot authentication)
+      // Call internal API to register/update tracker (bot authentication)
+      // Backend automatically handles replacement if user already has a tracker
       const tracker = await this.apiService.registerTracker(userId, url);
 
       const embed = new EmbedBuilder()
         .setTitle('✅ Tracker Registered Successfully')
-        .setDescription('Your tracker has been registered. Data is being collected in the background.')
+        .setDescription('Your tracker has been registered or updated. Data is being collected in the background.')
         .setColor(0x00ff00)
         .addFields(
           {
