@@ -14,7 +14,7 @@ import { logger } from '../utils/logger';
  */
 @injectable()
 export class ApiService {
-  public client: AxiosInstance;
+  private client: AxiosInstance;
 
   constructor(@inject(TYPES.ConfigService) private configService: ConfigService) {
     this.client = axios.create({
