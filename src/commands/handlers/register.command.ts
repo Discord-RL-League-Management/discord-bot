@@ -12,20 +12,38 @@ import { logger } from '../../utils/logger';
 /**
  * RegisterCommand - Single Responsibility: Handle /register command
  * 
- * Allows users to register their Rocket League tracker URL.
+ * Allows users to register up to 4 Rocket League tracker URLs.
  * The tracker data will be automatically collected via scraping.
  */
 @injectable()
 export class RegisterCommand implements ICommand {
   data = new SlashCommandBuilder()
     .setName('register')
-    .setDescription('Register your Rocket League tracker URL')
+    .setDescription('Register up to 4 Rocket League tracker URLs')
     .addStringOption((option) =>
       option
-        .setName('tracker_url')
-        .setDescription('Your tracker URL (e.g., https://rocketleague.tracker.network/rocket-league/profile/steam/username/overview)')
+        .setName('tracker_url_1')
+        .setDescription('Your first tracker URL (required)')
         .setRequired(true),
-    );
+    )
+    .addStringOption((option) =>
+      option
+        .setName('tracker_url_2')
+        .setDescription('Your second tracker URL (optional)')
+        .setRequired(false),
+    )
+    .addStringOption((option) =>
+      option
+        .setName('tracker_url_3')
+        .setDescription('Your third tracker URL (optional)')
+        .setRequired(false),
+    )
+    .addStringOption((option) =>
+      option
+        .setName('tracker_url_4')
+        .setDescription('Your fourth tracker URL (optional)')
+        .setRequired(false),
+    ) as SlashCommandBuilder;
 
   metadata = {
     category: 'public' as const,
@@ -35,48 +53,44 @@ export class RegisterCommand implements ICommand {
   constructor(@inject(TYPES.ApiService) private readonly apiService: ApiService) {}
 
   async execute(interaction: ChatInputCommandInteraction): Promise<void> {
-    const url = interaction.options.getString('tracker_url', true);
+    // Collect all provided URLs (filter out empty ones)
+    const urls = [
+      interaction.options.getString('tracker_url_1', true),
+      interaction.options.getString('tracker_url_2'),
+      interaction.options.getString('tracker_url_3'),
+      interaction.options.getString('tracker_url_4'),
+    ].filter((url): url is string => url !== null && url.trim() !== '');
+
     const userId = interaction.user.id;
 
     await interaction.deferReply({ ephemeral: true });
 
     try {
-      // Call internal API to register/update tracker (bot authentication)
-      // Backend automatically handles replacement if user already has a tracker
-      const tracker = await this.apiService.registerTracker(userId, url);
+      // Call internal API to register trackers
+      const trackers = await this.apiService.registerTrackers(userId, urls);
 
       const embed = new EmbedBuilder()
-        .setTitle('✅ Tracker Registered Successfully')
-        .setDescription('Your tracker has been registered or updated. Data is being collected in the background.')
+        .setTitle('✅ Trackers Registered Successfully')
+        .setDescription(`Successfully registered ${trackers.length} tracker(s). Data is being collected in the background.`)
         .setColor(0x00ff00)
         .addFields(
-          {
-            name: 'Tracker URL',
-            value: tracker.url || url,
+          trackers.map((tracker: any, index: number) => ({
+            name: `Tracker ${index + 1}`,
+            value: [
+              `**URL:** ${tracker.url || 'N/A'}`,
+              `**Platform:** ${tracker.platform || 'Unknown'}`,
+              `**Username:** ${tracker.username || 'Unknown'}`,
+              `**Status:** ${tracker.scrapingStatus || 'PENDING'}`,
+            ].join('\n'),
             inline: false,
-          },
-          {
-            name: 'Platform',
-            value: tracker.platform || 'Unknown',
-            inline: true,
-          },
-          {
-            name: 'Username',
-            value: tracker.username || 'Unknown',
-            inline: true,
-          },
-          {
-            name: 'Status',
-            value: tracker.scrapingStatus || 'PENDING',
-            inline: true,
-          },
+          })),
         )
         .setFooter({ text: 'You can check your tracker status in the web dashboard.' })
         .setTimestamp();
 
       await interaction.editReply({ embeds: [embed] });
     } catch (error: any) {
-      logger.error('Failed to register tracker:', error);
+      logger.error('Failed to register trackers:', error);
 
       const errorMessage =
         error.response?.data?.message ||
@@ -89,7 +103,7 @@ export class RegisterCommand implements ICommand {
         .setColor(0xff0000)
         .addFields({
           name: 'Tip',
-          value: 'Make sure your URL is in the format: https://rocketleague.tracker.network/rocket-league/profile/{platform}/{username}/overview',
+          value: 'Make sure your URLs are in the format: https://rocketleague.tracker.network/rocket-league/profile/{platform}/{username}/overview',
           inline: false,
         })
         .setTimestamp();

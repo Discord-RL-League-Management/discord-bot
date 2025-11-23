@@ -18,6 +18,7 @@ import { CommandDeploymentService } from './commands/command-deployment.service'
 import { ConfigCommand } from './commands/handlers/config.command';
 import { HelpCommand } from './commands/handlers/help.command';
 import { RegisterCommand } from './commands/handlers/register.command';
+import { AddTrackerCommand } from './commands/handlers/add-tracker.command';
 import { ProcessNextTrackerCommand } from './commands/handlers/process-next-tracker.command';
 import { createGuildCreateEvent } from './events/guildCreate';
 import { createGuildDeleteEvent } from './events/guildDelete';
@@ -45,6 +46,7 @@ const commandDeployment = container.get<CommandDeploymentService>(TYPES.CommandD
 const configCommand = container.get<ConfigCommand>(TYPES.ConfigCommand);
 const helpCommand = container.get<HelpCommand>(TYPES.HelpCommand);
 const registerCommand = container.get<RegisterCommand>(TYPES.RegisterCommand);
+const addTrackerCommand = container.get<AddTrackerCommand>(TYPES.AddTrackerCommand);
 const processNextTrackerCommand = container.get<ProcessNextTrackerCommand>(TYPES.ProcessNextTrackerCommand);
 
 // Get permission services from container
@@ -58,6 +60,7 @@ const cooldownService = container.get<CooldownService>(TYPES.CooldownService);
 commandRegistry.register(configCommand);
 commandRegistry.register(helpCommand);
 commandRegistry.register(registerCommand);
+commandRegistry.register(addTrackerCommand);
 commandRegistry.register(processNextTrackerCommand);
 
 // Create Discord client

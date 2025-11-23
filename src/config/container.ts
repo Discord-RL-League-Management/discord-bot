@@ -19,6 +19,7 @@ import { CommandDeploymentService } from '../commands/command-deployment.service
 import { ConfigCommand } from '../commands/handlers/config.command';
 import { HelpCommand } from '../commands/handlers/help.command';
 import { RegisterCommand } from '../commands/handlers/register.command';
+import { AddTrackerCommand } from '../commands/handlers/add-tracker.command';
 import { ProcessNextTrackerCommand } from '../commands/handlers/process-next-tracker.command';
 
 // Permission services
@@ -55,6 +56,7 @@ export function createContainer(): Container {
   container.bind<ConfigCommand>(TYPES.ConfigCommand).to(ConfigCommand).inSingletonScope();
   container.bind<HelpCommand>(TYPES.HelpCommand).to(HelpCommand).inSingletonScope();
   container.bind<RegisterCommand>(TYPES.RegisterCommand).to(RegisterCommand).inSingletonScope();
+  container.bind<AddTrackerCommand>(TYPES.AddTrackerCommand).to(AddTrackerCommand).inSingletonScope();
   container.bind<ProcessNextTrackerCommand>(TYPES.ProcessNextTrackerCommand).to(ProcessNextTrackerCommand).inSingletonScope();
 
   // Permission services

@@ -285,18 +285,35 @@ export class ApiService {
   }
 
   /**
-   * Register a tracker URL for a user
-   * Single Responsibility: HTTP call to register tracker
+   * Register multiple trackers for a user (1-4 trackers)
+   * Single Responsibility: HTTP call to register multiple trackers
    */
-  async registerTracker(userId: string, url: string): Promise<any> {
+  async registerTrackers(userId: string, urls: string[]): Promise<any> {
     try {
-      const response = await this.client.post('/internal/trackers/register', {
+      const response = await this.client.post('/internal/trackers/register-multiple', {
+        userId,
+        urls,
+      });
+      return response.data;
+    } catch (error: any) {
+      logger.error(`Failed to register trackers for user ${userId}:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Add an additional tracker for a user
+   * Single Responsibility: HTTP call to add tracker
+   */
+  async addTracker(userId: string, url: string): Promise<any> {
+    try {
+      const response = await this.client.post('/internal/trackers/add', {
         userId,
         url,
       });
       return response.data;
     } catch (error: any) {
-      logger.error(`Failed to register tracker for user ${userId}:`, error);
+      logger.error(`Failed to add tracker for user ${userId}:`, error);
       throw error;
     }
   }

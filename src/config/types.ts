@@ -30,6 +30,7 @@ export const TYPES = {
   ConfigCommand: Symbol.for('ConfigCommand'),
   HelpCommand: Symbol.for('HelpCommand'),
   RegisterCommand: Symbol.for('RegisterCommand'),
+  AddTrackerCommand: Symbol.for('AddTrackerCommand'),
   ProcessNextTrackerCommand: Symbol.for('ProcessNextTrackerCommand'),
   
   // Permission services
