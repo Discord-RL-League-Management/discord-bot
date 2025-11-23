@@ -12,61 +12,65 @@ import { logger } from '../../utils/logger';
 /**
  * RegisterCommand - Single Responsibility: Handle /register command
  * 
- * Allows users to register their tracker URL for admin approval.
+ * Allows users to register their Rocket League tracker URL.
+ * The tracker data will be automatically collected via scraping.
  */
 @injectable()
 export class RegisterCommand implements ICommand {
   data = new SlashCommandBuilder()
     .setName('register')
-    .setDescription('Register your tracker URL for admin approval')
+    .setDescription('Register your Rocket League tracker URL')
     .addStringOption((option) =>
       option
-        .setName('url')
-        .setDescription('Your tracker URL (tracker.gg or TRN)')
+        .setName('tracker_url')
+        .setDescription('Your tracker URL (e.g., https://rocketleague.tracker.network/rocket-league/profile/steam/username/overview)')
         .setRequired(true),
     );
 
   metadata = {
     category: 'public' as const,
-    requiresGuild: true,
+    requiresGuild: false,
   };
 
   constructor(@inject(TYPES.ApiService) private readonly apiService: ApiService) {}
 
   async execute(interaction: ChatInputCommandInteraction): Promise<void> {
-    if (!interaction.guildId) {
-      await interaction.reply({
-        content: 'This command can only be used in a server.',
-        ephemeral: true,
-      });
-      return;
-    }
-
-    const url = interaction.options.getString('url', true);
+    const url = interaction.options.getString('tracker_url', true);
     const userId = interaction.user.id;
-    const guildId = interaction.guildId;
 
     await interaction.deferReply({ ephemeral: true });
 
     try {
       // Call internal API to register tracker (bot authentication)
-      const response = await this.apiService.client.post(
-        '/internal/trackers/register',
-        {
-          url,
-          guildId,
-          userId,
-        },
-      );
+      const tracker = await this.apiService.registerTracker(userId, url);
 
       const embed = new EmbedBuilder()
-        .setTitle('✅ Registration Successful')
-        .setDescription(response.data.message || 'You are registered. Your tracker is pending admin approval.')
+        .setTitle('✅ Tracker Registered Successfully')
+        .setDescription('Your tracker has been registered. Data is being collected in the background.')
         .setColor(0x00ff00)
-        .addFields({
-          name: 'Status',
-          value: response.data.status || 'PENDING',
-        })
+        .addFields(
+          {
+            name: 'Tracker URL',
+            value: tracker.url || url,
+            inline: false,
+          },
+          {
+            name: 'Platform',
+            value: tracker.platform || 'Unknown',
+            inline: true,
+          },
+          {
+            name: 'Username',
+            value: tracker.username || 'Unknown',
+            inline: true,
+          },
+          {
+            name: 'Status',
+            value: tracker.scrapingStatus || 'PENDING',
+            inline: true,
+          },
+        )
+        .setFooter({ text: 'You can check your tracker status in the web dashboard.' })
         .setTimestamp();
 
       await interaction.editReply({ embeds: [embed] });
@@ -82,6 +86,11 @@ export class RegisterCommand implements ICommand {
         .setTitle('❌ Registration Failed')
         .setDescription(errorMessage)
         .setColor(0xff0000)
+        .addFields({
+          name: 'Tip',
+          value: 'Make sure your URL is in the format: https://rocketleague.tracker.network/rocket-league/profile/{platform}/{username}/overview',
+          inline: false,
+        })
         .setTimestamp();
 
       await interaction.editReply({ embeds: [embed] });

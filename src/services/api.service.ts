@@ -283,5 +283,22 @@ export class ApiService {
       throw error;
     }
   }
+
+  /**
+   * Register a tracker URL for a user
+   * Single Responsibility: HTTP call to register tracker
+   */
+  async registerTracker(userId: string, url: string): Promise<any> {
+    try {
+      const response = await this.client.post('/internal/trackers/register', {
+        userId,
+        url,
+      });
+      return response.data;
+    } catch (error: any) {
+      logger.error(`Failed to register tracker for user ${userId}:`, error);
+      throw error;
+    }
+  }
 }
 
