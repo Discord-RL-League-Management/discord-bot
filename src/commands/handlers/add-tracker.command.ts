@@ -36,12 +36,17 @@ export class AddTrackerCommand implements ICommand {
   async execute(interaction: ChatInputCommandInteraction): Promise<void> {
     const url = interaction.options.getString('tracker_url', true);
     const userId = interaction.user.id;
+    const userData = {
+      username: interaction.user.username,
+      globalName: interaction.user.globalName || undefined,
+      avatar: interaction.user.avatar || undefined,
+    };
 
     await interaction.deferReply({ ephemeral: true });
 
     try {
       // Call internal API to add tracker
-      const tracker = await this.apiService.addTracker(userId, url);
+      const tracker = await this.apiService.addTracker(userId, url, userData);
 
       const embed = new EmbedBuilder()
         .setTitle('✅ Tracker Added Successfully')

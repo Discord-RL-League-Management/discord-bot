@@ -62,12 +62,17 @@ export class RegisterCommand implements ICommand {
     ].filter((url): url is string => url !== null && url.trim() !== '');
 
     const userId = interaction.user.id;
+    const userData = {
+      username: interaction.user.username,
+      globalName: interaction.user.globalName || undefined,
+      avatar: interaction.user.avatar || undefined,
+    };
 
     await interaction.deferReply({ ephemeral: true });
 
     try {
       // Call internal API to register trackers
-      const trackers = await this.apiService.registerTrackers(userId, urls);
+      const trackers = await this.apiService.registerTrackers(userId, urls, userData);
 
       const embed = new EmbedBuilder()
         .setTitle('✅ Trackers Registered Successfully')

@@ -288,11 +288,16 @@ export class ApiService {
    * Register multiple trackers for a user (1-4 trackers)
    * Single Responsibility: HTTP call to register multiple trackers
    */
-  async registerTrackers(userId: string, urls: string[]): Promise<any> {
+  async registerTrackers(
+    userId: string,
+    urls: string[],
+    userData?: { username: string; globalName?: string; avatar?: string },
+  ): Promise<any> {
     try {
       const response = await this.client.post('/internal/trackers/register-multiple', {
         userId,
         urls,
+        userData,
       });
       return response.data;
     } catch (error: any) {
@@ -305,11 +310,16 @@ export class ApiService {
    * Add an additional tracker for a user
    * Single Responsibility: HTTP call to add tracker
    */
-  async addTracker(userId: string, url: string): Promise<any> {
+  async addTracker(
+    userId: string,
+    url: string,
+    userData?: { username: string; globalName?: string; avatar?: string },
+  ): Promise<any> {
     try {
       const response = await this.client.post('/internal/trackers/add', {
         userId,
         url,
+        userData,
       });
       return response.data;
     } catch (error: any) {
