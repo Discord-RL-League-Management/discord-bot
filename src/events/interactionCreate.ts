@@ -4,6 +4,7 @@ import { PermissionValidatorService } from '../services/permission-validator.ser
 import { PermissionLoggerService } from '../services/permission-logger.service';
 import { ApiService } from '../services/api.service';
 import { CooldownService } from '../services/cooldown.service';
+import { ConfigService } from '../services/config.service';
 import { createPermissionMiddleware } from '../middleware/permission-check.middleware';
 import { logger } from '../utils/logger';
 
@@ -18,7 +19,8 @@ export function createInteractionCreateEvent(
   permissionValidator: PermissionValidatorService,
   permissionLogger: PermissionLoggerService,
   apiService: ApiService,
-  cooldownService: CooldownService
+  cooldownService: CooldownService,
+  configService: ConfigService
 ) {
   // Create permission middleware using factory pattern
   const permissionMiddleware = createPermissionMiddleware(
@@ -36,6 +38,26 @@ export function createInteractionCreateEvent(
       if (!command) {
         logger.warn(`No command matching ${interaction.commandName} was found.`);
         return;
+      }
+
+      // Check if user ID restriction is enabled
+      const allowedUserId = configService.allowedUserId;
+      if (allowedUserId) {
+        if (interaction.user.id !== allowedUserId) {
+          logger.warn('Unauthorized command access attempt', {
+            userId: interaction.user.id,
+            username: interaction.user.username,
+            commandName: interaction.commandName,
+            guildId: interaction.guildId || 'DM',
+            channelId: interaction.channelId,
+          });
+
+          await interaction.reply({
+            content: 'You do not have permission to use this command',
+            ephemeral: true,
+          });
+          return;
+        }
       }
 
       try {
