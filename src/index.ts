@@ -54,6 +54,9 @@ const permissionLogger = container.get<PermissionLoggerService>(TYPES.Permission
 // Get cooldown service from container
 const cooldownService = container.get<CooldownService>(TYPES.CooldownService);
 
+// Get config service from container
+const configService = container.get<ConfigService>(TYPES.ConfigService);
+
 // Register commands
 commandRegistry.register(configCommand);
 commandRegistry.register(helpCommand);
@@ -100,7 +103,7 @@ client.on('guildMemberRemove', createGuildMemberRemoveEvent(memberService).execu
 client.on('guildMemberUpdate', createGuildMemberUpdateEvent(memberService).execute);
 
 // Register interaction handler with permission services
-client.on('interactionCreate', createInteractionCreateEvent(commandRegistry, permissionValidator, permissionLogger, apiService, cooldownService).execute);
+client.on('interactionCreate', createInteractionCreateEvent(commandRegistry, permissionValidator, permissionLogger, apiService, cooldownService, configService).execute);
 
 // Bot ready event - use 'clientReady' for Discord.js v14
 client.once('ready', async () => {
@@ -146,5 +149,4 @@ client.once('ready', async () => {
 });
 
 // Login to Discord
-const configService = container.get<ConfigService>(TYPES.ConfigService);
 client.login(configService.discordToken);

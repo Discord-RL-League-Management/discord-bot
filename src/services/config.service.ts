@@ -30,5 +30,9 @@ export class ConfigService {
   get dashboardUrl(): string | undefined {
     return this.config.DASHBOARD_URL;
   }
+
+  get allowedUserId(): string | undefined {
+    return this.config.ALLOWED_USER_ID;
+  }
 }
 
