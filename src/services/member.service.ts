@@ -23,7 +23,7 @@ export class MemberService {
   async handleMemberJoin(member: GuildMember): Promise<void> {
     // Skip bots
     if (member.user.bot) {
-      logger.debug(`Skipping bot join: ${member.user.username}`);
+      logger.info(`Skipping bot join: ${member.user.username}`);
       return;
     }
 
@@ -88,7 +88,7 @@ export class MemberService {
   async handleMemberUpdate(oldMember: GuildMember, newMember: GuildMember): Promise<void> {
     // Skip bots
     if (newMember.user.bot) {
-      logger.debug(`Skipping bot update: ${newMember.user.username}`);
+      logger.info(`Skipping bot update: ${newMember.user.username}`);
       return;
     }
 

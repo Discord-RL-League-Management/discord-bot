@@ -2,7 +2,7 @@
 import dotenv from 'dotenv';
 dotenv.config();
 
-import { Client, GatewayIntentBits, TextChannel, Message } from 'discord.js';
+import { Client, GatewayIntentBits, TextChannel, Message, Collection } from 'discord.js';
 import * as fs from 'fs/promises';
 import * as path from 'path';
 import { logger } from './logger';
@@ -88,7 +88,7 @@ async function exportMessages() {
         // Fetch messages in batches (Discord API limit is 100 per request)
         while (messageCount < MESSAGE_LIMIT) {
           const batchSize = Math.min(100, MESSAGE_LIMIT - messageCount);
-          const options: any = { limit: batchSize };
+          const options: { limit: number; before?: string } = { limit: batchSize };
           
           if (lastMessageId) {
             options.before = lastMessageId;
@@ -101,7 +101,7 @@ async function exportMessages() {
           }
 
           // Convert to array and sort by timestamp (oldest first for this batch)
-          const batchMessages = Array.from(fetched.values())
+          const batchMessages: Message[] = Array.from(fetched.values())
             .sort((a: Message, b: Message) => a.createdTimestamp - b.createdTimestamp);
 
           for (const message of batchMessages) {
@@ -109,7 +109,7 @@ async function exportMessages() {
             const author = message.author.tag;
             const content = message.content || '[No content]';
             const attachments = message.attachments.size > 0 
-              ? ` [${Array.from(message.attachments.values()).map(a => a.url).join(', ')}]`
+              ? ` [${Array.from(message.attachments.values()).map((a) => a.url).join(', ')}]`
               : '';
             
             messages.push(`[${date}] ${author}: ${content}${attachments}`);
