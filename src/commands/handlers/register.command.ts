@@ -73,7 +73,6 @@ export class RegisterCommand implements ICommand {
     try {
       // Capture channel context for ephemeral follow-up messages
       const channelId = interaction.channelId;
-      const guildId = interaction.guildId || undefined;
       const interactionToken = interaction.token;
 
       // Call internal API to register trackers with channel context
@@ -82,7 +81,6 @@ export class RegisterCommand implements ICommand {
         urls,
         userData,
         channelId,
-        guildId,
         interactionToken,
       );
 

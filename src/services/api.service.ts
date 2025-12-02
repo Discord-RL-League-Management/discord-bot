@@ -293,7 +293,6 @@ export class ApiService {
     urls: string[],
     userData?: { username: string; globalName?: string; avatar?: string },
     channelId?: string,
-    guildId?: string,
     interactionToken?: string,
   ): Promise<any> {
     try {
@@ -302,7 +301,6 @@ export class ApiService {
         urls,
         userData,
         channelId,
-        guildId,
         interactionToken,
       });
       return response.data;
@@ -321,7 +319,6 @@ export class ApiService {
     url: string,
     userData?: { username: string; globalName?: string; avatar?: string },
     channelId?: string,
-    guildId?: string,
     interactionToken?: string,
   ): Promise<any> {
     try {
@@ -330,7 +327,6 @@ export class ApiService {
         url,
         userData,
         channelId,
-        guildId,
         interactionToken,
       });
       return response.data;

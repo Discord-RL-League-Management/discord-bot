@@ -47,7 +47,6 @@ export class AddTrackerCommand implements ICommand {
     try {
       // Capture channel context for ephemeral follow-up messages
       const channelId = interaction.channelId;
-      const guildId = interaction.guildId || undefined;
       const interactionToken = interaction.token;
 
       // Call internal API to add tracker with channel context
@@ -56,7 +55,6 @@ export class AddTrackerCommand implements ICommand {
         url,
         userData,
         channelId,
-        guildId,
         interactionToken,
       );
 
