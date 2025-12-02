@@ -71,8 +71,18 @@ export class RegisterCommand implements ICommand {
     await interaction.deferReply({ ephemeral: true });
 
     try {
-      // Call internal API to register trackers
-      const trackers = await this.apiService.registerTrackers(userId, urls, userData);
+      // Capture channel context for ephemeral follow-up messages
+      const channelId = interaction.channelId;
+      const interactionToken = interaction.token;
+
+      // Call internal API to register trackers with channel context
+      const trackers = await this.apiService.registerTrackers(
+        userId,
+        urls,
+        userData,
+        channelId,
+        interactionToken,
+      );
 
       const embed = new EmbedBuilder()
         .setTitle('✅ Trackers Registered Successfully')

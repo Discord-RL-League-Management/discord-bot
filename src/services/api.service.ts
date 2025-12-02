@@ -292,12 +292,16 @@ export class ApiService {
     userId: string,
     urls: string[],
     userData?: { username: string; globalName?: string; avatar?: string },
+    channelId?: string,
+    interactionToken?: string,
   ): Promise<any> {
     try {
       const response = await this.client.post('/internal/trackers/register-multiple', {
         userId,
         urls,
         userData,
+        channelId,
+        interactionToken,
       });
       return response.data;
     } catch (error: any) {
@@ -314,12 +318,16 @@ export class ApiService {
     userId: string,
     url: string,
     userData?: { username: string; globalName?: string; avatar?: string },
+    channelId?: string,
+    interactionToken?: string,
   ): Promise<any> {
     try {
       const response = await this.client.post('/internal/trackers/add', {
         userId,
         url,
         userData,
+        channelId,
+        interactionToken,
       });
       return response.data;
     } catch (error: any) {

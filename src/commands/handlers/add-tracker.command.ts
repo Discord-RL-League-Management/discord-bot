@@ -22,7 +22,7 @@ export class AddTrackerCommand implements ICommand {
     .addStringOption((option) =>
       option
         .setName('tracker_url')
-        .setDescription('Your tracker URL (e.g., https://rocketleague.tracker.network/rocket-league/profile/steam/username/overview)')
+        .setDescription('Your tracker profile URL')
         .setRequired(true),
     ) as SlashCommandBuilder;
 
@@ -45,8 +45,18 @@ export class AddTrackerCommand implements ICommand {
     await interaction.deferReply({ ephemeral: true });
 
     try {
-      // Call internal API to add tracker
-      const tracker = await this.apiService.addTracker(userId, url, userData);
+      // Capture channel context for ephemeral follow-up messages
+      const channelId = interaction.channelId;
+      const interactionToken = interaction.token;
+
+      // Call internal API to add tracker with channel context
+      const tracker = await this.apiService.addTracker(
+        userId,
+        url,
+        userData,
+        channelId,
+        interactionToken,
+      );
 
       const embed = new EmbedBuilder()
         .setTitle('✅ Tracker Added Successfully')
