@@ -1,6 +1,7 @@
 import { injectable, inject } from 'inversify';
 import { Client, Guild } from 'discord.js';
 import { ApiService } from './api.service';
+import { ErrorClassificationService } from './error-classification.service';
 import { TYPES } from '../config/types';
 import { logger } from '../utils/logger';
 import { SyncResult } from '../types/operation-results';
@@ -14,7 +15,8 @@ import { SyncResult } from '../types/operation-results';
 @injectable()
 export class GuildSyncService {
   constructor(
-    @inject(TYPES.ApiService) private readonly apiService: ApiService
+    @inject(TYPES.ApiService) private readonly apiService: ApiService,
+    @inject(TYPES.ErrorClassificationService) private readonly errorClassification: ErrorClassificationService
   ) {}
 
   /**
@@ -46,8 +48,9 @@ export class GuildSyncService {
         (error: any) => {
           result.failed++;
           result.errors.push({ guildId: guild.id, error });
+          
           // Enhanced error logging with full context
-          logger.error(`Failed to sync guild ${guild.name} (${guild.id}):`, {
+          const errorContext: any = {
             message: error.message,
             statusCode: error.statusCode,
             code: error.code,
@@ -58,7 +61,17 @@ export class GuildSyncService {
               ownerId: guild.ownerId,
               memberCount: guild.memberCount,
             },
-          });
+          };
+
+          // Add helpful message for database schema errors
+          if (this.errorClassification.isDatabaseSchemaError(error)) {
+            errorContext.schemaError = true;
+            errorContext.actionableMessage = this.errorClassification.getDatabaseSchemaErrorMessage(error);
+            logger.error(`Database schema error detected for guild ${guild.name} (${guild.id}):`, errorContext);
+            logger.error(this.errorClassification.getDatabaseSchemaErrorMessage(error));
+          } else {
+            logger.error(`Failed to sync guild ${guild.name} (${guild.id}):`, errorContext);
+          }
         }
       )
     );
@@ -127,7 +140,7 @@ export class GuildSyncService {
       );
     } catch (error: any) {
       // Enhanced error logging with full context
-      logger.error(`Error syncing guild ${guild.name} (${guild.id}):`, {
+      const errorContext: any = {
         message: error.message,
         statusCode: error.statusCode,
         code: error.code,
@@ -138,7 +151,17 @@ export class GuildSyncService {
           ownerId: guild.ownerId,
           memberCount: guild.memberCount,
         },
-      });
+      };
+
+      // Add helpful message for database schema errors
+      if (this.errorClassification.isDatabaseSchemaError(error)) {
+        errorContext.schemaError = true;
+        errorContext.actionableMessage = this.errorClassification.getDatabaseSchemaErrorMessage(error);
+        logger.error(`Database schema error detected for guild ${guild.name} (${guild.id}):`, errorContext);
+        logger.error(this.errorClassification.getDatabaseSchemaErrorMessage(error));
+      } else {
+        logger.error(`Error syncing guild ${guild.name} (${guild.id}):`, errorContext);
+      }
       throw error;
     }
   }

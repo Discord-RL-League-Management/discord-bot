@@ -118,6 +118,47 @@ export class ErrorClassificationService {
   }
 
   /**
+   * Check if error is a database schema error (Prisma P2021)
+   * Single Responsibility: Database schema error detection
+   * 
+   * P2021 indicates a table doesn't exist in the database.
+   * This is a configuration issue that needs to be fixed on the API side.
+   */
+  isDatabaseSchemaError(error: any): boolean {
+    if (this.isApiError(error)) {
+      // Check for Prisma P2021 error code
+      if (error.code === 'PRISMA_P2021' || error.code === 'P2021') {
+        return true;
+      }
+      // Check in details
+      if (error.details?.prismaCode === 'P2021') {
+        return true;
+      }
+    }
+    
+    // Check error message for Prisma P2021 indicators
+    if (error?.message?.includes('P2021') || 
+        (error?.message?.includes('table') && error?.message?.includes('does not exist'))) {
+      return true;
+    }
+    
+    return false;
+  }
+
+  /**
+   * Get a human-readable error message for database schema errors
+   * Single Responsibility: Format database schema error messages
+   */
+  getDatabaseSchemaErrorMessage(error: any): string {
+    if (!this.isDatabaseSchemaError(error)) {
+      return error?.message || 'Unknown error';
+    }
+
+    const tableName = error.details?.meta?.table || error.details?.meta?.modelName || 'unknown table';
+    return `Database schema error: The table '${tableName}' does not exist. This indicates the database migrations need to be run on the API server. Please contact the API administrator to run database migrations.`;
+  }
+
+  /**
    * Check if error matches ApiError type
    * Single Responsibility: Type guard for ApiError
    */

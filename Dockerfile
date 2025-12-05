@@ -1,5 +1,5 @@
 # Stage 1: Build shared-types package
-FROM node:20-alpine AS build-shared-types
+FROM node:24-alpine AS build-shared-types
 WORKDIR /app/packages/shared-types
 
 # Copy shared-types package files
@@ -11,7 +11,7 @@ COPY packages/shared-types/src ./src
 RUN npm ci && npm run build
 
 # Stage 2: Build Discord bot
-FROM node:20-alpine AS build-bot
+FROM node:24-alpine AS build-bot
 WORKDIR /app
 
 # Copy built shared-types package from Stage 1
@@ -27,7 +27,7 @@ WORKDIR /app/discord-bot
 RUN npm ci && npm run build
 
 # Stage 3: Production runtime
-FROM node:20-alpine AS runtime
+FROM node:24-alpine AS runtime
 WORKDIR /app
 
 # Create non-root user for security
