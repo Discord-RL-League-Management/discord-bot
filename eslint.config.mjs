@@ -4,6 +4,8 @@ import eslintPluginPrettierRecommended from 'eslint-plugin-prettier/recommended'
 import globals from 'globals';
 import tseslint from 'typescript-eslint';
 import nestjsTyped from '@darraghor/eslint-plugin-nestjs-typed';
+import trilonPlugin from '@trilon/eslint-plugin';
+import nestjsSecurity from 'eslint-plugin-nestjs-security';
 
 export default tseslint.config(
   {
@@ -13,6 +15,18 @@ export default tseslint.config(
   ...tseslint.configs.recommendedTypeChecked,
   eslintPluginPrettierRecommended,
   ...nestjsTyped.configs.flatRecommended,
+  {
+    plugins: {
+      '@trilon': trilonPlugin,
+      'nestjs-security': nestjsSecurity,
+    },
+  },
+  {
+    rules: {
+      ...trilonPlugin.configs.recommended.rules,
+      ...nestjsSecurity.configs.recommended.rules,
+    },
+  },
   {
     languageOptions: {
       globals: {
