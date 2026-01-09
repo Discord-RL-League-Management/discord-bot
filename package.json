@@ -32,7 +32,8 @@
     "necord": "^6.12.0",
     "passport": "^0.7.0",
     "reflect-metadata": "^0.2.2",
-    "rxjs": "^7.8.1"
+    "rxjs": "^7.8.1",
+    "zod": "^4.3.5"
   },
   "devDependencies": {
     "@commitlint/cli": "^20.3.1",
