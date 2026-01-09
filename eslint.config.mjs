@@ -9,7 +9,7 @@ import nestjsSecurity from 'eslint-plugin-nestjs-security';
 
 export default tseslint.config(
   {
-    ignores: ['eslint.config.mjs'],
+    ignores: ['eslint.config.mjs', 'commitlint.config.js'],
   },
   eslint.configs.recommended,
   ...tseslint.configs.recommendedTypeChecked,
@@ -45,7 +45,7 @@ export default tseslint.config(
       '@typescript-eslint/no-explicit-any': 'off',
       '@typescript-eslint/no-floating-promises': 'warn',
       '@typescript-eslint/no-unsafe-argument': 'warn',
-      "prettier/prettier": ["error", { endOfLine: "auto" }],
+      'prettier/prettier': ['error', { endOfLine: 'auto' }],
       // Disable Swagger rules for Discord bot (no REST API)
       '@darraghor/nestjs-typed/controllers-should-supply-api-tags': 'off',
       '@darraghor/nestjs-typed/api-method-should-specify-api-response': 'off',

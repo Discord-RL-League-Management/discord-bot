@@ -100,7 +100,10 @@
       "prettier --write"
     ],
     "*.{ts,js}": [
-      "eslint --fix",
+      "eslint --fix --ignore-pattern commitlint.config.js",
+      "prettier --write"
+    ],
+    "commitlint.config.js": [
       "prettier --write"
     ],
     "*.{json,md,yml,yaml,mjs}": [
