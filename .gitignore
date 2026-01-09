@@ -3,6 +3,7 @@ node_modules/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+pnpm-debug.log*
 
 # Environment variables
 .env
@@ -14,6 +15,9 @@ yarn-error.log*
 # Build output
 dist/
 build/
+
+# Preserved old code (temporary during migration)
+old/
 
 # Logs
 logs/
