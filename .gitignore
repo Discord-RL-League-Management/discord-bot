@@ -15,6 +15,9 @@ yarn-error.log*
 dist/
 build/
 
+# Preserved old code (temporary during migration)
+old/
+
 # Logs
 logs/
 *.log
