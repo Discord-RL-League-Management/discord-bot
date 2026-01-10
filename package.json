@@ -22,12 +22,15 @@
     "commitlint": "commitlint --edit"
   },
   "dependencies": {
+    "@nestjs/axios": "^4.0.1",
     "@nestjs/common": "^11.0.1",
     "@nestjs/config": "^4.0.2",
     "@nestjs/core": "^11.0.1",
     "@nestjs/passport": "^11.0.5",
     "@nestjs/platform-express": "^11.0.1",
     "@nestjs/throttler": "^6.5.0",
+    "axios": "^1.13.2",
+    "class-validator": "^0.14.3",
     "inversify": "^7.11.0",
     "necord": "^6.12.0",
     "passport": "^0.7.0",

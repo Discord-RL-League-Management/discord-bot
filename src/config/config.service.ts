@@ -21,23 +21,45 @@ export class ConfigService {
   }
 
   getApiBaseUrl(): string {
-    const value = this.nestConfigService.get<string>('API_BASE_URL', {
+    const explicitUrl = this.nestConfigService.get<string>('API_BASE_URL', {
+      infer: true,
+    });
+    if (explicitUrl) {
+      return explicitUrl;
+    }
+
+    const protocol =
+      this.nestConfigService.get<'http' | 'https'>('API_PROTOCOL', {
+        infer: true,
+      }) ?? 'http';
+    const host =
+      this.nestConfigService.get<string>('API_HOST', {
+        infer: true,
+      }) ?? 'localhost';
+    const port = this.nestConfigService.get<string>('API_PORT', {
+      infer: true,
+    });
+
+    const defaultPort = protocol === 'https' ? '443' : '3000';
+    const finalPort = port || defaultPort;
+
+    if (protocol === 'https' && finalPort === '443') {
+      return `${protocol}://${host}`;
+    }
+    if (protocol === 'http' && finalPort === '80') {
+      return `${protocol}://${host}`;
+    }
+    return `${protocol}://${host}:${finalPort}`;
+  }
+
+  getApiKey(): string {
+    const value = this.nestConfigService.get<string>('BOT_API_KEY', {
       infer: true,
     });
     if (!value) {
       throw new Error(
-        'API_BASE_URL is required but was not found in configuration',
+        'BOT_API_KEY is required but was not found in configuration',
       );
-    }
-    return value;
-  }
-
-  getApiKey(): string {
-    const value = this.nestConfigService.get<string>('API_KEY', {
-      infer: true,
-    });
-    if (!value) {
-      throw new Error('API_KEY is required but was not found in configuration');
     }
     return value;
   }
@@ -54,5 +76,19 @@ export class ConfigService {
       'development' | 'production' | 'test'
     >('NODE_ENV', { infer: true });
     return (nodeEnv ?? 'development') as 'development' | 'production' | 'test';
+  }
+
+  getBotPort(): number {
+    const port = this.nestConfigService.get<string>('BOT_PORT', {
+      infer: true,
+    });
+    if (port) {
+      const parsedPort = parseInt(port, 10);
+      if (!isNaN(parsedPort) && parsedPort > 0 && parsedPort <= 65535) {
+        return parsedPort;
+      }
+    }
+    // Default to 3001 to avoid conflict with API on 3000
+    return 3001;
   }
 }
