@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { HttpModule } from '@nestjs/axios';
 import { ApiService } from './api.service';
 import { ApiHealthService } from './api-health.service';
+import { ApiHealthGuard } from './api-health.guard';
 import { ConfigModule } from '../config/config.module';
 import { ConfigService } from '../config/config.service';
 
@@ -21,7 +22,7 @@ import { ConfigService } from '../config/config.service';
       inject: [ConfigService],
     }),
   ],
-  providers: [ApiService, ApiHealthService],
-  exports: [ApiService, ApiHealthService, HttpModule],
+  providers: [ApiService, ApiHealthService, ApiHealthGuard],
+  exports: [ApiService, ApiHealthService, ApiHealthGuard, HttpModule],
 })
 export class ApiModule {}
