@@ -4,6 +4,7 @@ import { IntentsBitField } from 'discord.js';
 import { DiscordService } from './discord.service';
 import { ConfigModule } from '../config/config.module';
 import { ConfigService } from '../config/config.service';
+import { GuildModule } from '../guild/guild.module';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { ConfigService } from '../config/config.service';
       }),
       inject: [ConfigService],
     }),
+    GuildModule,
   ],
   providers: [DiscordService],
   exports: [DiscordService],

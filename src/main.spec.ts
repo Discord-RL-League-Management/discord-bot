@@ -10,6 +10,13 @@ jest.mock('@nestjs/core', () => ({
   },
 }));
 
+jest.mock('./app/app.module', () => ({
+  AppModule: class AppModule {},
+}));
+
+// Import bootstrap after mocks are set up
+import { bootstrap } from './main';
+
 describe('main bootstrap', () => {
   let mockApp: jest.Mocked<INestApplication>;
   let mockApiHealthService: jest.Mocked<ApiHealthService>;
@@ -66,7 +73,7 @@ describe('main bootstrap', () => {
       mockApiHealthService.checkHealth.mockResolvedValue(undefined);
       mockConfigService.getBotPort.mockReturnValue(3001);
 
-      await testBootstrap(mockApp);
+      await bootstrap();
 
       expect(mockApp.get).toHaveBeenCalledWith(ApiHealthService);
       expect(mockApiHealthService.checkHealth).toHaveBeenCalledTimes(1);
@@ -76,7 +83,7 @@ describe('main bootstrap', () => {
       mockApiHealthService.checkHealth.mockResolvedValue(undefined);
       mockConfigService.getBotPort.mockReturnValue(8080);
 
-      await testBootstrap(mockApp);
+      await bootstrap();
 
       expect(mockApp.get).toHaveBeenCalledWith(ConfigService);
       expect(mockConfigService.getBotPort).toHaveBeenCalledTimes(1);
@@ -87,7 +94,7 @@ describe('main bootstrap', () => {
       const port = 8080;
       mockConfigService.getBotPort.mockReturnValue(port);
 
-      await testBootstrap(mockApp);
+      await bootstrap();
 
       expect(mockApp.listen).toHaveBeenCalledWith(port);
       expect(mockApp.listen).toHaveBeenCalledTimes(1);
@@ -98,7 +105,7 @@ describe('main bootstrap', () => {
       const port = 3001;
       mockConfigService.getBotPort.mockReturnValue(port);
 
-      await testBootstrap(mockApp);
+      await bootstrap();
 
       expect(loggerSpy.log).toHaveBeenCalledWith(
         `Bot server listening on port ${port}`,
@@ -109,7 +116,7 @@ describe('main bootstrap', () => {
       mockApiHealthService.checkHealth.mockResolvedValue(undefined);
       mockConfigService.getBotPort.mockReturnValue(3001);
 
-      await testBootstrap(mockApp);
+      await bootstrap();
 
       expect(processExitSpy).not.toHaveBeenCalled();
     });
@@ -118,7 +125,7 @@ describe('main bootstrap', () => {
       mockApiHealthService.checkHealth.mockResolvedValue(undefined);
       mockConfigService.getBotPort.mockReturnValue(3001);
 
-      await testBootstrap(mockApp);
+      await bootstrap();
 
       expect(mockApp.close).not.toHaveBeenCalled();
     });
@@ -129,7 +136,7 @@ describe('main bootstrap', () => {
       const error = new Error('Connection timeout');
       mockApiHealthService.checkHealth.mockRejectedValue(error);
 
-      await testBootstrap(mockApp);
+      await bootstrap();
 
       expect(mockApiHealthService.checkHealth).toHaveBeenCalled();
       expect(mockApp.listen).not.toHaveBeenCalled();
@@ -139,7 +146,7 @@ describe('main bootstrap', () => {
       const error = new Error('Service unavailable');
       mockApiHealthService.checkHealth.mockRejectedValue(error);
 
-      await testBootstrap(mockApp);
+      await bootstrap();
 
       expect(loggerSpy.error).toHaveBeenCalledWith(
         'Failed to start bot: Service unavailable',
@@ -153,7 +160,7 @@ describe('main bootstrap', () => {
       const error = 'API unavailable';
       mockApiHealthService.checkHealth.mockRejectedValue(error);
 
-      await testBootstrap(mockApp);
+      await bootstrap();
 
       expect(loggerSpy.error).toHaveBeenCalledWith(
         'Failed to start bot: API health check failed',
@@ -164,7 +171,7 @@ describe('main bootstrap', () => {
       const error = new Error('Health check failed');
       mockApiHealthService.checkHealth.mockRejectedValue(error);
 
-      await testBootstrap(mockApp);
+      await bootstrap();
 
       expect(mockApp.close).toHaveBeenCalledTimes(1);
     });
@@ -173,7 +180,7 @@ describe('main bootstrap', () => {
       const error = new Error('Health check failed');
       mockApiHealthService.checkHealth.mockRejectedValue(error);
 
-      await testBootstrap(mockApp);
+      await bootstrap();
 
       expect(processExitSpy).toHaveBeenCalledWith(1);
       expect(processExitSpy).toHaveBeenCalledTimes(1);
@@ -185,7 +192,7 @@ describe('main bootstrap', () => {
       mockApiHealthService.checkHealth.mockRejectedValue(healthCheckError);
       mockApp.close.mockRejectedValue(closeError);
 
-      await testBootstrap(mockApp);
+      await bootstrap();
 
       expect(loggerSpy.error).toHaveBeenCalledWith(
         'Error closing application:',
@@ -199,7 +206,7 @@ describe('main bootstrap', () => {
       mockApiHealthService.checkHealth.mockRejectedValue(healthCheckError);
       mockApp.close.mockRejectedValue(new Error('Close failed'));
 
-      await testBootstrap(mockApp);
+      await bootstrap();
 
       // Should still call process.exit even if close throws
       expect(processExitSpy).toHaveBeenCalledWith(1);
@@ -208,7 +215,7 @@ describe('main bootstrap', () => {
     it('should handle null error from health check', async () => {
       mockApiHealthService.checkHealth.mockRejectedValue(null);
 
-      await testBootstrap(mockApp);
+      await bootstrap();
 
       expect(loggerSpy.error).toHaveBeenCalledWith(
         'Failed to start bot: API health check failed',
@@ -220,7 +227,7 @@ describe('main bootstrap', () => {
     it('should handle undefined error from health check', async () => {
       mockApiHealthService.checkHealth.mockRejectedValue(undefined);
 
-      await testBootstrap(mockApp);
+      await bootstrap();
 
       expect(loggerSpy.error).toHaveBeenCalledWith(
         'Failed to start bot: API health check failed',
@@ -233,7 +240,7 @@ describe('main bootstrap', () => {
       const error = new Error('Health check failed');
       mockApiHealthService.checkHealth.mockRejectedValue(error);
 
-      await testBootstrap(mockApp);
+      await bootstrap();
 
       expect(mockApp.listen).not.toHaveBeenCalled();
       expect(loggerSpy.log).not.toHaveBeenCalledWith(
@@ -247,7 +254,7 @@ describe('main bootstrap', () => {
       const error = new Error('Specific error message');
       mockApiHealthService.checkHealth.mockRejectedValue(error);
 
-      await testBootstrap(mockApp);
+      await bootstrap();
 
       expect(loggerSpy.error).toHaveBeenCalledWith(
         'Failed to start bot: Specific error message',
@@ -258,7 +265,7 @@ describe('main bootstrap', () => {
       const error = { code: 'ECONNREFUSED', status: 503 };
       mockApiHealthService.checkHealth.mockRejectedValue(error);
 
-      await testBootstrap(mockApp);
+      await bootstrap();
 
       expect(loggerSpy.error).toHaveBeenCalledWith(
         'Failed to start bot: API health check failed',
@@ -269,7 +276,7 @@ describe('main bootstrap', () => {
       const error = new Error('Health check failed');
       mockApiHealthService.checkHealth.mockRejectedValue(error);
 
-      await testBootstrap(mockApp);
+      await bootstrap();
 
       const closeCallOrder = mockApp.close.mock.invocationCallOrder[0];
       const exitCallOrder = processExitSpy.mock.invocationCallOrder[0];
@@ -278,32 +285,3 @@ describe('main bootstrap', () => {
     });
   });
 });
-
-// This replicates the exact logic from main.ts bootstrap function
-async function testBootstrap(mockApp: jest.Mocked<INestApplication>) {
-  const logger = new Logger('Bootstrap');
-
-  try {
-    const apiHealthService = mockApp.get(ApiHealthService);
-    await apiHealthService.checkHealth();
-  } catch (error: unknown) {
-    const errorMessage =
-      error instanceof Error ? error.message : 'API health check failed';
-    logger.error(`Failed to start bot: ${errorMessage}`);
-    logger.error(
-      'Bot cannot start without API connection. Please ensure the API is running and accessible.',
-    );
-    try {
-      await mockApp.close();
-    } catch (closeError: unknown) {
-      logger.error('Error closing application:', closeError);
-    }
-    process.exit(1);
-    return;
-  }
-
-  const configService = mockApp.get(ConfigService);
-  const port = configService.getBotPort();
-  await mockApp.listen(port);
-  logger.log(`Bot server listening on port ${port}`);
-}

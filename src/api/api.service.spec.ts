@@ -547,6 +547,27 @@ describe('ApiService', () => {
         },
       );
     });
+
+    it('should throw ApiError when response has no data', async () => {
+      httpService.post.mockReturnValue(
+        of({
+          data: null,
+          status: 200,
+          statusText: 'OK',
+          headers: {},
+          config: {} as any,
+        }),
+      );
+
+      await expect(
+        service.syncGuildWithMembersAndRoles(
+          guildId,
+          mockGuildData,
+          mockMembers,
+          mockRoles,
+        ),
+      ).rejects.toThrow(ApiError);
+    });
   });
 
   describe('syncGuildMembers', () => {
@@ -588,6 +609,22 @@ describe('ApiService', () => {
         service.syncGuildMembers(invalidId, mockMembers),
       ).rejects.toThrow(ApiError);
       expect(httpService.post).not.toHaveBeenCalled();
+    });
+
+    it('should throw ApiError when response has no data', async () => {
+      httpService.post.mockReturnValue(
+        of({
+          data: null,
+          status: 200,
+          statusText: 'OK',
+          headers: {},
+          config: {} as any,
+        }),
+      );
+
+      await expect(
+        service.syncGuildMembers(guildId, mockMembers),
+      ).rejects.toThrow(ApiError);
     });
   });
 
@@ -691,6 +728,22 @@ describe('ApiService', () => {
 
       expect(httpService.delete).not.toHaveBeenCalled();
     });
+
+    it('should throw ApiError when response has no data', async () => {
+      httpService.delete.mockReturnValue(
+        of({
+          data: null,
+          status: 200,
+          statusText: 'OK',
+          headers: {},
+          config: {} as any,
+        }),
+      );
+
+      await expect(service.removeGuildMember(guildId, userId)).rejects.toThrow(
+        ApiError,
+      );
+    });
   });
 
   describe('getGuildSettings', () => {
@@ -725,6 +778,20 @@ describe('ApiService', () => {
         ApiError,
       );
       expect(httpService.get).not.toHaveBeenCalled();
+    });
+
+    it('should throw ApiError when response has no data', async () => {
+      httpService.get.mockReturnValue(
+        of({
+          data: null,
+          status: 200,
+          statusText: 'OK',
+          headers: {},
+          config: {} as any,
+        }),
+      );
+
+      await expect(service.getGuildSettings(guildId)).rejects.toThrow(ApiError);
     });
   });
 
@@ -797,6 +864,22 @@ describe('ApiService', () => {
         },
       );
     });
+
+    it('should throw ApiError when response has no data', async () => {
+      httpService.post.mockReturnValue(
+        of({
+          data: null,
+          status: 200,
+          statusText: 'OK',
+          headers: {},
+          config: {} as any,
+        }),
+      );
+
+      await expect(
+        service.registerTrackers(userId, urls, userData),
+      ).rejects.toThrow(ApiError);
+    });
   });
 
   describe('addTracker', () => {
@@ -856,6 +939,20 @@ describe('ApiService', () => {
         channelId: undefined,
         interactionToken: undefined,
       });
+    });
+
+    it('should throw ApiError when response has no data', async () => {
+      httpService.post.mockReturnValue(
+        of({
+          data: null,
+          status: 200,
+          statusText: 'OK',
+          headers: {},
+          config: {} as any,
+        }),
+      );
+
+      await expect(service.addTracker(userId, url)).rejects.toThrow(ApiError);
     });
   });
 

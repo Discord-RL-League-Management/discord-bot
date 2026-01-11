@@ -1,17 +1,20 @@
 import { Module } from '@nestjs/common';
-import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
-import { APP_GUARD } from '@nestjs/core';
+import { ThrottlerModule } from '@nestjs/throttler';
 import { AppController } from '../app.controller';
 import { AppService } from '../app.service';
 import { ConfigModule } from '../config/config.module';
 import { ApiModule } from '../api/api.module';
 import { DiscordModule } from '../discord/discord.module';
+import { GuildModule } from '../guild/guild.module';
+import { MemberModule } from '../member/member.module';
 
 @Module({
   imports: [
     ConfigModule,
     ApiModule,
     DiscordModule,
+    GuildModule,
+    MemberModule,
     ThrottlerModule.forRoot([
       {
         ttl: 60000,
@@ -20,12 +23,6 @@ import { DiscordModule } from '../discord/discord.module';
     ]),
   ],
   controllers: [AppController],
-  providers: [
-    AppService,
-    {
-      provide: APP_GUARD,
-      useClass: ThrottlerGuard,
-    },
-  ],
+  providers: [AppService],
 })
 export class AppModule {}

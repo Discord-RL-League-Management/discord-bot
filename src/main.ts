@@ -4,7 +4,7 @@ import { ApiHealthService } from './api/api-health.service';
 import { ConfigService } from './config/config.service';
 import { Logger } from '@nestjs/common';
 
-async function bootstrap() {
+export async function bootstrap() {
   const logger = new Logger('Bootstrap');
   const app = await NestFactory.create(AppModule);
 
@@ -26,6 +26,7 @@ async function bootstrap() {
       logger.error('Error closing application:', closeError);
     }
     process.exit(1);
+    return; // Prevent further execution in tests where process.exit is mocked
   }
 
   const configService = app.get(ConfigService);
@@ -33,4 +34,8 @@ async function bootstrap() {
   await app.listen(port);
   logger.log(`Bot server listening on port ${port}`);
 }
-void bootstrap();
+
+// Only call bootstrap if this file is being executed directly (not imported)
+if (require.main === module) {
+  void bootstrap();
+}
