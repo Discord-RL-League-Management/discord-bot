@@ -419,4 +419,34 @@ describe('ConfigService', () => {
       expect(result).toBe(9000);
     });
   });
+
+  describe('getSuperUserId', () => {
+    it('should return super user ID when configured', () => {
+      const superUserId = '123456789012345678';
+      nestConfigService.get.mockReturnValue(superUserId);
+
+      const result = service.getSuperUserId();
+
+      expect(result).toBe(superUserId);
+      expect(nestConfigService.get).toHaveBeenCalledWith('SUPER_USER_ID', {
+        infer: true,
+      });
+    });
+
+    it('should return undefined when super user ID is not configured', () => {
+      nestConfigService.get.mockReturnValue(undefined);
+
+      const result = service.getSuperUserId();
+
+      expect(result).toBeUndefined();
+    });
+
+    it('should return undefined when super user ID is empty string', () => {
+      nestConfigService.get.mockReturnValue('');
+
+      const result = service.getSuperUserId();
+
+      expect(result).toBeUndefined();
+    });
+  });
 });

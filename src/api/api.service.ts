@@ -536,4 +536,31 @@ export class ApiService {
       this.transformError(error);
     }
   }
+
+  /**
+   * Process trackers for a guild - triggers API to scrape/process tracker data
+   * Single Responsibility: HTTP call to process trackers for a guild
+   */
+  async processTrackers(guildId: string): Promise<{
+    processed: number;
+    trackers: string[];
+  }> {
+    try {
+      const response = await firstValueFrom(
+        this.httpService.post('/internal/trackers/process', {
+          guildId,
+        }),
+      );
+      if (!response.data) {
+        throw new ApiError('API returned no data', response.status, 'NO_DATA');
+      }
+      return response.data as { processed: number; trackers: string[] };
+    } catch (error: unknown) {
+      this.logger.error(
+        `Failed to process trackers for guild ${guildId}:`,
+        error,
+      );
+      this.transformError(error);
+    }
+  }
 }

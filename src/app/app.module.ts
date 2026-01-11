@@ -7,6 +7,7 @@ import { ApiModule } from '../api/api.module';
 import { DiscordModule } from '../discord/discord.module';
 import { GuildModule } from '../guild/guild.module';
 import { MemberModule } from '../member/member.module';
+import { CommandsModule } from '../commands/commands.module';
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import { MemberModule } from '../member/member.module';
     DiscordModule,
     GuildModule,
     MemberModule,
+    CommandsModule,
     ThrottlerModule.forRoot([
       {
         ttl: 60000,

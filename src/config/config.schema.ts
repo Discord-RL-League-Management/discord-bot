@@ -15,6 +15,10 @@ export const configSchema = z.object({
   DASHBOARD_URL: z
     .union([z.string().url('DASHBOARD_URL must be a valid URL'), z.literal('')])
     .optional(),
+  SUPER_USER_ID: z
+    .string()
+    .regex(/^\d{17,19}$/, 'SUPER_USER_ID must be a valid Discord ID')
+    .optional(),
   NODE_ENV: z
     .enum(['development', 'production', 'test'])
     .default('development'),
