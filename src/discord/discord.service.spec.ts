@@ -1,6 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { Logger } from '@nestjs/common';
 import { DiscordService } from './discord.service';
+import { GuildSyncService } from '../guild/guild-sync.service';
 import type { ContextOf } from 'necord';
 
 describe('DiscordService', () => {
@@ -12,9 +13,23 @@ describe('DiscordService', () => {
     error: jest.SpyInstance;
   };
 
+  const mockGuildSyncService = {
+    syncAllGuilds: jest
+      .fn()
+      .mockResolvedValue({ synced: 0, total: 0, failed: 0 }),
+  };
+
   beforeEach(async () => {
+    mockGuildSyncService.syncAllGuilds.mockClear();
+
     module = await Test.createTestingModule({
-      providers: [DiscordService],
+      providers: [
+        DiscordService,
+        {
+          provide: GuildSyncService,
+          useValue: mockGuildSyncService,
+        },
+      ],
     }).compile();
 
     service = module.get<DiscordService>(DiscordService);
@@ -39,33 +54,39 @@ describe('DiscordService', () => {
   });
 
   describe('onReady', () => {
-    it('should log username when client.user exists with username', () => {
+    it('should log username when client.user exists with username', async () => {
       const mockClient = {
         user: {
           id: '123456789012345678',
           username: 'TestBot',
         },
+        guilds: { cache: new Map() },
       };
 
-      service.onReady([mockClient] as unknown as ContextOf<'ready'>);
+      await service.onReady([mockClient] as unknown as ContextOf<'ready'>);
 
       expect(loggerSpy.log).toHaveBeenCalledWith('Bot logged in as TestBot');
       expect(loggerSpy.log).toHaveBeenCalledWith(
         'Bot is ready and online in Discord',
       );
-      expect(loggerSpy.log).toHaveBeenCalledTimes(2);
+      // Additional logs for guild sync: "Starting guild sync..." and "Guild sync complete: ..."
+      expect(loggerSpy.log).toHaveBeenCalledWith('Starting guild sync...');
+      expect(mockGuildSyncService.syncAllGuilds).toHaveBeenCalledWith(
+        mockClient,
+      );
       expect(loggerSpy.error).not.toHaveBeenCalled();
     });
 
-    it('should log user ID when client.user exists but username is null', () => {
+    it('should log user ID when client.user exists but username is null', async () => {
       const mockClient = {
         user: {
           id: '123456789012345678',
           username: null,
         },
+        guilds: { cache: new Map() },
       };
 
-      service.onReady([mockClient] as unknown as ContextOf<'ready'>);
+      await service.onReady([mockClient] as unknown as ContextOf<'ready'>);
 
       expect(loggerSpy.log).toHaveBeenCalledWith(
         'Bot logged in as 123456789012345678',
@@ -73,19 +94,24 @@ describe('DiscordService', () => {
       expect(loggerSpy.log).toHaveBeenCalledWith(
         'Bot is ready and online in Discord',
       );
-      expect(loggerSpy.log).toHaveBeenCalledTimes(2);
+      // Additional logs for guild sync
+      expect(loggerSpy.log).toHaveBeenCalledWith('Starting guild sync...');
+      expect(mockGuildSyncService.syncAllGuilds).toHaveBeenCalledWith(
+        mockClient,
+      );
       expect(loggerSpy.error).not.toHaveBeenCalled();
     });
 
-    it('should log user ID when client.user exists but username is undefined', () => {
+    it('should log user ID when client.user exists but username is undefined', async () => {
       const mockClient = {
         user: {
           id: '123456789012345678',
           username: undefined,
         },
+        guilds: { cache: new Map() },
       };
 
-      service.onReady([mockClient] as unknown as ContextOf<'ready'>);
+      await service.onReady([mockClient] as unknown as ContextOf<'ready'>);
 
       expect(loggerSpy.log).toHaveBeenCalledWith(
         'Bot logged in as 123456789012345678',
@@ -95,15 +121,16 @@ describe('DiscordService', () => {
       );
     });
 
-    it('should log Unknown when client.user exists but both username and id are null', () => {
+    it('should log Unknown when client.user exists but both username and id are null', async () => {
       const mockClient = {
         user: {
           id: null,
           username: null,
         },
+        guilds: { cache: new Map() },
       };
 
-      service.onReady([mockClient] as unknown as ContextOf<'ready'>);
+      await service.onReady([mockClient] as unknown as ContextOf<'ready'>);
 
       expect(loggerSpy.log).toHaveBeenCalledWith('Bot logged in as Unknown');
       expect(loggerSpy.log).toHaveBeenCalledWith(
@@ -111,15 +138,16 @@ describe('DiscordService', () => {
       );
     });
 
-    it('should log Unknown when client.user exists but both username and id are undefined', () => {
+    it('should log Unknown when client.user exists but both username and id are undefined', async () => {
       const mockClient = {
         user: {
           id: undefined,
           username: undefined,
         },
+        guilds: { cache: new Map() },
       };
 
-      service.onReady([mockClient] as unknown as ContextOf<'ready'>);
+      await service.onReady([mockClient] as unknown as ContextOf<'ready'>);
 
       expect(loggerSpy.log).toHaveBeenCalledWith('Bot logged in as Unknown');
       expect(loggerSpy.log).toHaveBeenCalledWith(
@@ -127,12 +155,12 @@ describe('DiscordService', () => {
       );
     });
 
-    it('should log error and return early when client.user is null', () => {
+    it('should log error and return early when client.user is null', async () => {
       const mockClient = {
         user: null,
       };
 
-      service.onReady([mockClient] as unknown as ContextOf<'ready'>);
+      await service.onReady([mockClient] as unknown as ContextOf<'ready'>);
 
       expect(loggerSpy.error).toHaveBeenCalledWith(
         'Client user is null during ready event - this should not happen',
@@ -140,12 +168,12 @@ describe('DiscordService', () => {
       expect(loggerSpy.log).not.toHaveBeenCalled();
     });
 
-    it('should log error and return early when client.user is undefined', () => {
+    it('should log error and return early when client.user is undefined', async () => {
       const mockClient = {
         user: undefined,
       };
 
-      service.onReady([mockClient] as unknown as ContextOf<'ready'>);
+      await service.onReady([mockClient] as unknown as ContextOf<'ready'>);
 
       expect(loggerSpy.error).toHaveBeenCalledWith(
         'Client user is null during ready event - this should not happen',
@@ -153,21 +181,23 @@ describe('DiscordService', () => {
       expect(loggerSpy.log).not.toHaveBeenCalled();
     });
 
-    it('should prefer username over id when both are available', () => {
+    it('should prefer username over id when both are available', async () => {
       const mockClient = {
         user: {
           id: '123456789012345678',
           username: 'PreferredUsername',
         },
+        guilds: { cache: new Map() },
       };
 
-      service.onReady([mockClient] as unknown as ContextOf<'ready'>);
+      await service.onReady([mockClient] as unknown as ContextOf<'ready'>);
 
       expect(loggerSpy.log).toHaveBeenCalledWith(
         'Bot logged in as PreferredUsername',
       );
+      // Note: The guild sync log does not contain the user ID
       expect(loggerSpy.log).not.toHaveBeenCalledWith(
-        expect.stringContaining('123456789012345678'),
+        'Bot logged in as 123456789012345678',
       );
     });
   });

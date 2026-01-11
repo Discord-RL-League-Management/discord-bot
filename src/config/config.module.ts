@@ -4,7 +4,7 @@ import { configSchema } from './config.schema';
 import { ConfigService } from './config.service';
 
 // Throws descriptive error if validation fails to prevent startup with invalid configuration
-function validate(config: Record<string, unknown>) {
+export function validate(config: Record<string, unknown>) {
   const result = configSchema.safeParse(config);
 
   if (!result.success) {
