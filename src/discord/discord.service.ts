@@ -9,11 +9,11 @@ export class DiscordService {
 
   constructor(private readonly guildSyncService: GuildSyncService) {}
 
-  @Once('ready')
-  public async onReady(@Context() [client]: ContextOf<'ready'>) {
+  @Once('clientReady')
+  public async onReady(@Context() [client]: ContextOf<'clientReady'>) {
     if (!client.user) {
       this.logger.error(
-        'Client user is null during ready event - this should not happen',
+        'Client user is null during clientReady event - this should not happen',
       );
       return;
     }

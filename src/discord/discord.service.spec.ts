@@ -63,7 +63,9 @@ describe('DiscordService', () => {
         guilds: { cache: new Map() },
       };
 
-      await service.onReady([mockClient] as unknown as ContextOf<'ready'>);
+      await service.onReady([
+        mockClient,
+      ] as unknown as ContextOf<'clientReady'>);
 
       expect(loggerSpy.log).toHaveBeenCalledWith('Bot logged in as TestBot');
       expect(loggerSpy.log).toHaveBeenCalledWith(
@@ -86,7 +88,9 @@ describe('DiscordService', () => {
         guilds: { cache: new Map() },
       };
 
-      await service.onReady([mockClient] as unknown as ContextOf<'ready'>);
+      await service.onReady([
+        mockClient,
+      ] as unknown as ContextOf<'clientReady'>);
 
       expect(loggerSpy.log).toHaveBeenCalledWith(
         'Bot logged in as 123456789012345678',
@@ -111,7 +115,9 @@ describe('DiscordService', () => {
         guilds: { cache: new Map() },
       };
 
-      await service.onReady([mockClient] as unknown as ContextOf<'ready'>);
+      await service.onReady([
+        mockClient,
+      ] as unknown as ContextOf<'clientReady'>);
 
       expect(loggerSpy.log).toHaveBeenCalledWith(
         'Bot logged in as 123456789012345678',
@@ -130,7 +136,9 @@ describe('DiscordService', () => {
         guilds: { cache: new Map() },
       };
 
-      await service.onReady([mockClient] as unknown as ContextOf<'ready'>);
+      await service.onReady([
+        mockClient,
+      ] as unknown as ContextOf<'clientReady'>);
 
       expect(loggerSpy.log).toHaveBeenCalledWith('Bot logged in as Unknown');
       expect(loggerSpy.log).toHaveBeenCalledWith(
@@ -147,7 +155,9 @@ describe('DiscordService', () => {
         guilds: { cache: new Map() },
       };
 
-      await service.onReady([mockClient] as unknown as ContextOf<'ready'>);
+      await service.onReady([
+        mockClient,
+      ] as unknown as ContextOf<'clientReady'>);
 
       expect(loggerSpy.log).toHaveBeenCalledWith('Bot logged in as Unknown');
       expect(loggerSpy.log).toHaveBeenCalledWith(
@@ -160,10 +170,12 @@ describe('DiscordService', () => {
         user: null,
       };
 
-      await service.onReady([mockClient] as unknown as ContextOf<'ready'>);
+      await service.onReady([
+        mockClient,
+      ] as unknown as ContextOf<'clientReady'>);
 
       expect(loggerSpy.error).toHaveBeenCalledWith(
-        'Client user is null during ready event - this should not happen',
+        'Client user is null during clientReady event - this should not happen',
       );
       expect(loggerSpy.log).not.toHaveBeenCalled();
     });
@@ -173,10 +185,12 @@ describe('DiscordService', () => {
         user: undefined,
       };
 
-      await service.onReady([mockClient] as unknown as ContextOf<'ready'>);
+      await service.onReady([
+        mockClient,
+      ] as unknown as ContextOf<'clientReady'>);
 
       expect(loggerSpy.error).toHaveBeenCalledWith(
-        'Client user is null during ready event - this should not happen',
+        'Client user is null during clientReady event - this should not happen',
       );
       expect(loggerSpy.log).not.toHaveBeenCalled();
     });
@@ -190,7 +204,9 @@ describe('DiscordService', () => {
         guilds: { cache: new Map() },
       };
 
-      await service.onReady([mockClient] as unknown as ContextOf<'ready'>);
+      await service.onReady([
+        mockClient,
+      ] as unknown as ContextOf<'clientReady'>);
 
       expect(loggerSpy.log).toHaveBeenCalledWith(
         'Bot logged in as PreferredUsername',
