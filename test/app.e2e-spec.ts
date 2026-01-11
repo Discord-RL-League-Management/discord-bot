@@ -22,10 +22,11 @@ describe('AppController (e2e)', () => {
     await moduleFixture.close();
   });
 
-  it('/ (GET)', () => {
-    return request(app.getHttpServer())
+  it('/ (GET)', async () => {
+    const response = await request(app.getHttpServer())
       .get('/')
       .expect(200)
       .expect('Hello World!');
+    expect(response).toBeDefined();
   });
 });

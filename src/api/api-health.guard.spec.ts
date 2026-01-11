@@ -37,7 +37,6 @@ describe('ApiHealthGuard', () => {
       getType: jest.fn(),
     } as unknown as ExecutionContext;
 
-    // Reset mock between tests
     jest.clearAllMocks();
   });
 
@@ -51,23 +50,25 @@ describe('ApiHealthGuard', () => {
 
   describe('canActivate', () => {
     it('should return true when API health check succeeds', async () => {
-      const checkHealthMock = jest.fn().mockResolvedValueOnce(undefined);
-      apiHealthService.checkHealth = checkHealthMock;
+      jest
+        .spyOn(apiHealthService, 'checkHealth')
+        .mockResolvedValueOnce(undefined);
 
       const result = await guard.canActivate(mockExecutionContext);
 
       expect(result).toBe(true);
-      expect(checkHealthMock).toHaveBeenCalledTimes(1);
+      expect(apiHealthService.checkHealth).toHaveBeenCalledTimes(1);
     });
 
     it('should throw ServiceUnavailableException when API health check fails with Error', async () => {
       const errorMessage = 'Connection timeout';
       apiHealthService.checkHealth.mockRejectedValue(new Error(errorMessage));
 
-      await expect(guard.canActivate(mockExecutionContext)).rejects.toThrow(
-        ServiceUnavailableException,
-      );
-      await expect(guard.canActivate(mockExecutionContext)).rejects.toThrow(
+      const error = await guard
+        .canActivate(mockExecutionContext)
+        .catch((e) => e as ServiceUnavailableException);
+      expect(error).toBeInstanceOf(ServiceUnavailableException);
+      expect(error.message).toBe(
         `API is currently unavailable: ${errorMessage}. Request cannot be processed.`,
       );
     });
@@ -75,10 +76,11 @@ describe('ApiHealthGuard', () => {
     it('should throw ServiceUnavailableException when API health check fails with non-Error', async () => {
       apiHealthService.checkHealth.mockRejectedValue('API unavailable');
 
-      await expect(guard.canActivate(mockExecutionContext)).rejects.toThrow(
-        ServiceUnavailableException,
-      );
-      await expect(guard.canActivate(mockExecutionContext)).rejects.toThrow(
+      const error = await guard
+        .canActivate(mockExecutionContext)
+        .catch((e) => e as ServiceUnavailableException);
+      expect(error).toBeInstanceOf(ServiceUnavailableException);
+      expect(error.message).toBe(
         'API is currently unavailable: API unavailable. Request cannot be processed.',
       );
     });
@@ -86,10 +88,11 @@ describe('ApiHealthGuard', () => {
     it('should throw ServiceUnavailableException with default message when error has no message', async () => {
       apiHealthService.checkHealth.mockRejectedValue(null);
 
-      await expect(guard.canActivate(mockExecutionContext)).rejects.toThrow(
-        ServiceUnavailableException,
-      );
-      await expect(guard.canActivate(mockExecutionContext)).rejects.toThrow(
+      const error = await guard
+        .canActivate(mockExecutionContext)
+        .catch((e) => e as ServiceUnavailableException);
+      expect(error).toBeInstanceOf(ServiceUnavailableException);
+      expect(error.message).toBe(
         'API is currently unavailable: API unavailable. Request cannot be processed.',
       );
     });

@@ -107,7 +107,6 @@ export class ApiService {
       throw new ApiError(message, statusCode, code, details);
     }
 
-    // Ensure we throw an Error object with proper structure for downstream code
     if (error instanceof Error) {
       throw error;
     }
@@ -171,7 +170,6 @@ export class ApiService {
       }
       return response.data;
     } catch (error: unknown) {
-      // Enhanced error logging with full context
       const errorObj = error as Record<string, unknown>;
       const responseObj =
         typeof errorObj.response === 'object' && errorObj.response !== null
