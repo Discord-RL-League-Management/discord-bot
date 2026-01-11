@@ -71,6 +71,13 @@ export class ConfigService {
     return value === '' ? undefined : value;
   }
 
+  getSuperUserId(): string | undefined {
+    const value = this.nestConfigService.get<string>('SUPER_USER_ID', {
+      infer: true,
+    });
+    return value === '' ? undefined : value;
+  }
+
   getNodeEnv(): 'development' | 'production' | 'test' {
     const nodeEnv = this.nestConfigService.get<
       'development' | 'production' | 'test'
