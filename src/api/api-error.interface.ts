@@ -14,7 +14,7 @@ export class ApiError extends Error {
     this.statusCode = statusCode;
     this.code = code;
     this.details = details;
-    // Maintains proper stack trace for where error was thrown (V8 only)
+    // Capture stack trace at error construction site (Node.js/V8 only; ignored on other engines)
     Error.captureStackTrace(this, this.constructor);
   }
 }

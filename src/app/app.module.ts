@@ -5,11 +5,13 @@ import { AppController } from '../app.controller';
 import { AppService } from '../app.service';
 import { ConfigModule } from '../config/config.module';
 import { ApiModule } from '../api/api.module';
+import { DiscordModule } from '../discord/discord.module';
 
 @Module({
   imports: [
     ConfigModule,
     ApiModule,
+    DiscordModule,
     ThrottlerModule.forRoot([
       {
         ttl: 60000,
