@@ -1,10 +1,11 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, UseGuards } from '@nestjs/common';
 import { SlashCommand, Context } from 'necord';
 import type { SlashCommandContext } from 'necord';
 import { EmbedBuilder } from 'discord.js';
 import { ApiService } from '../api/api.service';
 import { ConfigService } from '../config/config.service';
 import { AxiosError } from 'axios';
+import { ChannelRestrictionGuard } from '../permissions/channel-restriction/channel-restriction.guard';
 
 /**
  * ProcessTrackersCommand - Single Responsibility: Handle /process-trackers command
@@ -13,6 +14,7 @@ import { AxiosError } from 'axios';
  * Only callable by the super user.
  */
 @Injectable()
+@UseGuards(ChannelRestrictionGuard.create('staff'))
 export class ProcessTrackersCommand {
   private readonly logger = new Logger(ProcessTrackersCommand.name);
 
@@ -29,13 +31,16 @@ export class ProcessTrackersCommand {
   public async onProcessTrackers(
     @Context() [interaction]: SlashCommandContext,
   ): Promise<void> {
-    // Permission check is handled by PermissionGuard
-    // Guild check is handled by PermissionGuard via metadata (requiresGuild: true)
-    // Super user check is handled by PermissionGuard via metadata (requiresSuperUser: true)
+    // Permission checks (guild context, super user) are handled by PermissionGuard
+    // via metadata (requiresGuild: true, requiresSuperUser: true) before this method executes
 
     await interaction.deferReply({ ephemeral: true });
 
     try {
+      // Guard ensures guild context, so guildId is guaranteed to be non-null
+      if (!interaction.guildId) {
+        throw new Error('Guild ID is required for this command');
+      }
       const result = await this.apiService.processTrackers(interaction.guildId);
 
       const embed = new EmbedBuilder()

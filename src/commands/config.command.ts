@@ -1,8 +1,9 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, UseGuards } from '@nestjs/common';
 import { SlashCommand, Context } from 'necord';
 import type { SlashCommandContext } from 'necord';
 import { EmbedBuilder, PermissionFlagsBits } from 'discord.js';
 import { ConfigService } from '../config/config.service';
+import { ChannelRestrictionGuard } from '../permissions/channel-restriction/channel-restriction.guard';
 
 /**
  * ConfigCommand - Single Responsibility: Handle /config command
@@ -11,6 +12,7 @@ import { ConfigService } from '../config/config.service';
  * Provides dashboard link and configuration instructions.
  */
 @Injectable()
+@UseGuards(ChannelRestrictionGuard.create('staff'))
 export class ConfigCommand {
   constructor(private readonly configService: ConfigService) {}
 
