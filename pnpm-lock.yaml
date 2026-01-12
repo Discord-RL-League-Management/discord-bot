@@ -40,9 +40,6 @@ importers:
       discord.js:
         specifier: ^14.25.1
         version: 14.25.1
-      inversify:
-        specifier: ^7.11.0
-        version: 7.11.0(reflect-metadata@0.2.2)
       necord:
         specifier: ^6.12.0
         version: 6.12.0(@nestjs/common@11.1.11(class-validator@0.14.3)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.11)(discord-api-types@0.38.37)(discord.js@14.25.1)(reflect-metadata@0.2.2)(rxjs@7.8.2)
@@ -1928,46 +1925,6 @@ packages:
     peerDependencies:
       '@typescript-eslint/utils': ^8.46.2
       typescript: '>=4.0.0'
-
-  '@inversifyjs/common@1.5.2':
-    resolution:
-      {
-        integrity: sha512-WlzR9xGadABS9gtgZQ+luoZ8V6qm4Ii6RQfcfC9Ho2SOlE6ZuemFo7PKJvKI0ikm8cmKbU8hw5UK6E4qovH21w==,
-      }
-
-  '@inversifyjs/container@1.15.0':
-    resolution:
-      {
-        integrity: sha512-U2xYsPrJTz5za2TExi5lg8qOWf8TEVBpN+pQM7B8BVA2rajtbRE9A66SLRHk8c1eGXmg+0K4Hdki6tWAsSQBUA==,
-      }
-    peerDependencies:
-      reflect-metadata: ~0.2.2
-
-  '@inversifyjs/core@9.2.0':
-    resolution:
-      {
-        integrity: sha512-Nm7BR6KmpgshIHpVQWuEDehqRVb6GBm8LFEuhc2s4kSZWrArZ15RmXQzROLk4m+hkj4kMXgvMm5Qbopot/D6Sg==,
-      }
-
-  '@inversifyjs/plugin@0.2.0':
-    resolution:
-      {
-        integrity: sha512-R/JAdkTSD819pV1zi0HP54mWHyX+H2m8SxldXRgPQarS3ySV4KPyRdosWcfB8Se0JJZWZLHYiUNiS6JvMWSPjw==,
-      }
-
-  '@inversifyjs/prototype-utils@0.1.3':
-    resolution:
-      {
-        integrity: sha512-EzRamZzNgE9Sn3QtZ8NncNa2lpPMZfspqbK6BWFguWnOpK8ymp2TUuH46ruFHZhrHKnknPd7fG22ZV7iF517TQ==,
-      }
-
-  '@inversifyjs/reflect-metadata-utils@1.4.1':
-    resolution:
-      {
-        integrity: sha512-Cp77C4d2wLaHXiUB7iH6Cxb7i1lD/YDuTIHLTDzKINqGSz0DCSoL/Dg2wVkW/6Qx03r/yQMLJ+32Agl32N2X8g==,
-      }
-    peerDependencies:
-      reflect-metadata: ~0.2.2
 
   '@isaacs/balanced-match@4.0.1':
     resolution:
@@ -5360,12 +5317,6 @@ packages:
         integrity: sha512-QQnnxNyfvmHFIsj7gkPcYymR8Jdw/o7mp5ZFihxn6h8Ci6fh3Dx4E1gPjpQEpIuPo9XVNY/ZUwh4BPMjGyL01g==,
       }
     engines: { node: ^14.17.0 || ^16.13.0 || >=18.0.0 }
-
-  inversify@7.11.0:
-    resolution:
-      {
-        integrity: sha512-yZDprSSr8TyVeMGI/AOV4ws6gwjX22hj9Z8/oHAVpJORY6WRFTcUzhnZtibBUHEw2U8ArvHcR+i863DplQ3Cwg==,
-      }
 
   ipaddr.js@1.9.1:
     resolution:
@@ -9361,34 +9312,6 @@ snapshots:
       enhanced-resolve: 5.18.4
       get-tsconfig: 4.13.0
 
-  '@inversifyjs/common@1.5.2': {}
-
-  '@inversifyjs/container@1.15.0(reflect-metadata@0.2.2)':
-    dependencies:
-      '@inversifyjs/common': 1.5.2
-      '@inversifyjs/core': 9.2.0(reflect-metadata@0.2.2)
-      '@inversifyjs/plugin': 0.2.0
-      '@inversifyjs/reflect-metadata-utils': 1.4.1(reflect-metadata@0.2.2)
-      reflect-metadata: 0.2.2
-
-  '@inversifyjs/core@9.2.0(reflect-metadata@0.2.2)':
-    dependencies:
-      '@inversifyjs/common': 1.5.2
-      '@inversifyjs/prototype-utils': 0.1.3
-      '@inversifyjs/reflect-metadata-utils': 1.4.1(reflect-metadata@0.2.2)
-    transitivePeerDependencies:
-      - reflect-metadata
-
-  '@inversifyjs/plugin@0.2.0': {}
-
-  '@inversifyjs/prototype-utils@0.1.3':
-    dependencies:
-      '@inversifyjs/common': 1.5.2
-
-  '@inversifyjs/reflect-metadata-utils@1.4.1(reflect-metadata@0.2.2)':
-    dependencies:
-      reflect-metadata: 0.2.2
-
   '@isaacs/balanced-match@4.0.1': {}
 
   '@isaacs/brace-expansion@5.0.0':
@@ -11639,14 +11562,6 @@ snapshots:
   inherits@2.0.4: {}
 
   ini@4.1.1: {}
-
-  inversify@7.11.0(reflect-metadata@0.2.2):
-    dependencies:
-      '@inversifyjs/common': 1.5.2
-      '@inversifyjs/container': 1.15.0(reflect-metadata@0.2.2)
-      '@inversifyjs/core': 9.2.0(reflect-metadata@0.2.2)
-    transitivePeerDependencies:
-      - reflect-metadata
 
   ipaddr.js@1.9.1: {}
 
