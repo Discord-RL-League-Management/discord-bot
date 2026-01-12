@@ -59,6 +59,124 @@ $ npm run test:cov
 
 ## Deployment
 
+### Railway Deployment
+
+This application includes a production-ready Dockerfile optimized for Railway deployment. Railway will automatically detect the Dockerfile and use it for container builds.
+
+#### Prerequisites
+
+1. A Railway account ([railway.app](https://railway.app))
+2. A Railway project created
+3. Your application connected to Railway (via Git repository or Railway CLI)
+
+#### Environment Variables
+
+Configure the following environment variables in your Railway project settings:
+
+**Required:**
+
+- `DISCORD_TOKEN` - Your Discord bot token
+- `BOT_API_KEY` - API key for authenticating with the external API
+
+**Optional:**
+
+- `BOT_PORT` - Port for the bot server (default: `3001`)
+  - **Note:** Railway assigns a `PORT` environment variable automatically. If you want to use Railway's assigned port, set `BOT_PORT` to match Railway's `PORT` value.
+- `API_BASE_URL` - Full URL of the external API (e.g., `https://api.example.com`)
+  - Alternative: Use `API_HOST`, `API_PORT`, and `API_PROTOCOL` instead
+- `API_HOST` - API hostname (default: `localhost`)
+- `API_PORT` - API port (default: `3000` for http, `443` for https)
+- `API_PROTOCOL` - API protocol: `http` or `https` (default: `http`)
+- `DASHBOARD_URL` - URL of the dashboard (optional)
+- `SUPER_USER_ID` - Discord user ID for super user permissions (optional, must be 17-19 digits)
+- `NODE_ENV` - Environment: `development`, `production`, or `test` (default: `development`)
+
+#### Deployment Steps
+
+1. **Connect your repository** to Railway (or use Railway CLI to deploy)
+2. **Add environment variables** in Railway project settings (Settings → Variables)
+3. **Configure port** (if needed):
+   - Railway will assign a `PORT` environment variable
+   - Either set `BOT_PORT` to match Railway's `PORT`, or configure Railway to use port `3001`
+4. **Deploy** - Railway will automatically build and deploy using the Dockerfile
+
+The application will:
+
+- Build using multi-stage Docker build (Node 24-alpine)
+- Run as a non-root user for security
+- Use production dependencies only in the final image
+- Start with `node dist/main`
+
+#### Local Docker Testing
+
+Test the Dockerfile locally before deploying:
+
+**Using pnpm scripts (recommended):**
+
+```bash
+# Build and run the container
+pnpm docker:start
+
+# Or run individually
+pnpm docker:build
+pnpm docker:run
+
+# View logs
+pnpm docker:logs
+
+# Stop the container
+pnpm docker:stop
+```
+
+**Manual Docker commands:**
+
+```bash
+# Build the image
+docker build -t discord-bot .
+
+# Run the container using your .env file
+docker run -d --name discord-bot --network league-api_default -p 3001:3001 --env-file .env discord-bot
+```
+
+**Important Configuration Differences:**
+
+**Local Docker Setup:**
+
+- The bot container must be on the same Docker network as your API container
+- The `docker:run` script automatically connects to `league-api_default` network
+- Configure your `.env` file to use the API container name:
+  ```bash
+  API_BASE_URL=http://league_api:3000
+  ```
+  Or if your API runs on the host machine (not in Docker):
+  ```bash
+  API_BASE_URL=http://host.docker.internal:3000
+  ```
+
+**Railway Deployment:**
+
+- Use the full Railway service URL for your API:
+  ```bash
+  API_BASE_URL=https://your-api-service.up.railway.app
+  ```
+  Or if your API is external:
+  ```bash
+  API_BASE_URL=https://api.example.com
+  ```
+- Do not use `localhost` or container names on Railway
+- Environment variables are set in Railway's dashboard (Settings → Variables)
+
+**Note:** The `.env` file is excluded from the Docker image (via `.dockerignore`) for security. Use `--env-file .env` to load environment variables from your local `.env` file when testing locally. For Railway deployment, environment variables are provided via Railway's environment variable system.
+
+#### Important Notes
+
+- The application requires the external API to be accessible before it starts (health check on startup)
+- Environment variables are read from `process.env` - no `.env` file is needed in the container
+- The Dockerfile uses multi-stage builds to minimize final image size
+- The application runs as a non-root user (`nodejs`, UID 1001)
+
+### Other Deployment Options
+
 When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
 
 If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:

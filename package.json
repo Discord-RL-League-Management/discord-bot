@@ -20,7 +20,12 @@
     "test:e2e": "jest --config ./test/jest-e2e.json",
     "prepare": "husky",
     "commitlint": "commitlint --edit",
-    "post-work": "bash .cursor/scripts/post-work-pipeline.sh"
+    "post-work": "bash .cursor/scripts/post-work-pipeline.sh",
+    "docker:build": "docker build -t discord-bot .",
+    "docker:run": "docker run -d --name discord-bot --network league-api_default -p 3001:3001 --env-file .env discord-bot",
+    "docker:stop": "docker stop discord-bot && docker rm discord-bot",
+    "docker:logs": "docker logs -f discord-bot",
+    "docker:start": "pnpm docker:build && pnpm docker:run"
   },
   "dependencies": {
     "@nestjs/axios": "^4.0.1",
