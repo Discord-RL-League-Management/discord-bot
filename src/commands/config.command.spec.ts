@@ -1,6 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ConfigCommand } from './config.command';
 import { ConfigService } from '../config/config.service';
+import { ApiService } from '../api/api.service';
 import type { SlashCommandContext } from 'necord';
 import { ChatInputCommandInteraction } from 'discord.js';
 
@@ -23,12 +24,20 @@ describe('ConfigCommand', () => {
       getDashboardUrl: jest.fn(),
     };
 
+    const mockApiService = {
+      getGuildSettings: jest.fn(),
+    };
+
     module = await Test.createTestingModule({
       providers: [
         ConfigCommand,
         {
           provide: ConfigService,
           useValue: mockConfigService,
+        },
+        {
+          provide: ApiService,
+          useValue: mockApiService,
         },
       ],
     }).compile();

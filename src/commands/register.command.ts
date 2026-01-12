@@ -1,9 +1,10 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, UseGuards } from '@nestjs/common';
 import { SlashCommand, Context } from 'necord';
 import type { SlashCommandContext } from 'necord';
 import { EmbedBuilder, SlashCommandBuilder } from 'discord.js';
 import { ApiService } from '../api/api.service';
 import { AxiosError } from 'axios';
+import { ChannelRestrictionGuard } from '../permissions/channel-restriction/channel-restriction.guard';
 
 /**
  * RegisterCommand - Single Responsibility: Handle /register command
@@ -20,6 +21,7 @@ interface TrackerResponse {
 }
 
 @Injectable()
+@UseGuards(ChannelRestrictionGuard.create('public'))
 export class RegisterCommand {
   private readonly logger = new Logger(RegisterCommand.name);
 

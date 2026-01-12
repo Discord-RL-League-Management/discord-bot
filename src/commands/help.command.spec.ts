@@ -1,5 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { HelpCommand } from './help.command';
+import { ApiService } from '../api/api.service';
 import type { SlashCommandContext } from 'necord';
 import { ChatInputCommandInteraction } from 'discord.js';
 
@@ -14,8 +15,18 @@ describe('HelpCommand', () => {
   };
 
   beforeEach(async () => {
+    const mockApiService = {
+      getGuildSettings: jest.fn(),
+    };
+
     module = await Test.createTestingModule({
-      providers: [HelpCommand],
+      providers: [
+        HelpCommand,
+        {
+          provide: ApiService,
+          useValue: mockApiService,
+        },
+      ],
     }).compile();
 
     command = module.get<HelpCommand>(HelpCommand);
@@ -54,7 +65,6 @@ describe('HelpCommand', () => {
       expect(embed.data.fields).toBeDefined();
       expect(embed.data.fields.length).toBeGreaterThan(0);
 
-      // Verify all expected commands are present
       const commandNames = embed.data.fields.map((field: any) => field.name);
       expect(commandNames).toEqual(
         expect.arrayContaining([
@@ -76,7 +86,6 @@ describe('HelpCommand', () => {
       const embed = replyCall.embeds[0];
       const fields = embed.data.fields;
 
-      // Check that each command has a description
       fields.forEach((field: any) => {
         expect(field.value).toBeDefined();
         expect(typeof field.value).toBe('string');

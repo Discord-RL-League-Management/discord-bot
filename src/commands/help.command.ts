@@ -1,7 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, UseGuards } from '@nestjs/common';
 import { SlashCommand, Context } from 'necord';
 import type { SlashCommandContext } from 'necord';
 import { EmbedBuilder } from 'discord.js';
+import { ChannelRestrictionGuard } from '../permissions/channel-restriction/channel-restriction.guard';
 
 /**
  * HelpCommand - Single Responsibility: Handle /help command
@@ -10,6 +11,7 @@ import { EmbedBuilder } from 'discord.js';
  * Note: Command list is maintained manually since Necord auto-registers commands.
  */
 @Injectable()
+@UseGuards(ChannelRestrictionGuard.create('public'))
 export class HelpCommand {
   // Static list of commands - maintain this when adding new commands
   private readonly commands = [
