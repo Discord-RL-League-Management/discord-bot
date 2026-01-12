@@ -29,27 +29,9 @@ export class ProcessTrackersCommand {
   public async onProcessTrackers(
     @Context() [interaction]: SlashCommandContext,
   ): Promise<void> {
-    const superUserId = this.configService.getSuperUserId();
-    const userId = interaction.user.id;
-
-    if (!superUserId || userId !== superUserId) {
-      this.logger.warn(
-        `Unauthorized process-trackers attempt by user ${userId}`,
-      );
-      await interaction.reply({
-        content: '❌ You do not have permission to use this command.',
-        ephemeral: true,
-      });
-      return;
-    }
-
-    if (!interaction.guildId) {
-      await interaction.reply({
-        content: '❌ This command can only be used in a server.',
-        ephemeral: true,
-      });
-      return;
-    }
+    // Permission check is handled by PermissionGuard
+    // Guild check is handled by PermissionGuard via metadata (requiresGuild: true)
+    // Super user check is handled by PermissionGuard via metadata (requiresSuperUser: true)
 
     await interaction.deferReply({ ephemeral: true });
 

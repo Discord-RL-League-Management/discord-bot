@@ -293,6 +293,44 @@ describe('ApiService', () => {
         ApiError,
       );
     });
+
+    it('should handle error with statusCode property in error object', async () => {
+      const errorObj = {
+        statusCode: 503,
+        message: 'Service unavailable',
+        code: 'SERVICE_UNAVAILABLE',
+      };
+
+      httpService.post.mockReturnValue(throwError(() => errorObj));
+
+      await expect(service.upsertGuild(mockGuildData)).rejects.toThrow(Error);
+    });
+
+    it('should handle error with response.status in response object', async () => {
+      const axiosError = {
+        response: {
+          status: 429,
+        },
+        message: 'Rate limited',
+        isAxiosError: true,
+      } as AxiosError;
+
+      httpService.post.mockReturnValue(throwError(() => axiosError));
+
+      await expect(service.upsertGuild(mockGuildData)).rejects.toThrow(
+        ApiError,
+      );
+    });
+
+    it('should handle error without message property', async () => {
+      const errorObj = {
+        code: 'UNKNOWN_ERROR',
+      };
+
+      httpService.post.mockReturnValue(throwError(() => errorObj));
+
+      await expect(service.upsertGuild(mockGuildData)).rejects.toThrow(Error);
+    });
   });
 
   describe('removeGuild', () => {
@@ -567,6 +605,63 @@ describe('ApiService', () => {
           mockRoles,
         ),
       ).rejects.toThrow(ApiError);
+    });
+
+    it('should handle error with statusCode property in error object', async () => {
+      const errorObj = {
+        statusCode: 503,
+        message: 'Service unavailable',
+        code: 'SERVICE_UNAVAILABLE',
+      };
+
+      httpService.post.mockReturnValue(throwError(() => errorObj));
+
+      await expect(
+        service.syncGuildWithMembersAndRoles(
+          guildId,
+          mockGuildData,
+          mockMembers,
+          mockRoles,
+        ),
+      ).rejects.toThrow(Error);
+    });
+
+    it('should handle error with response.status in response object', async () => {
+      const axiosError = {
+        response: {
+          status: 429,
+        },
+        message: 'Rate limited',
+        isAxiosError: true,
+      } as AxiosError;
+
+      httpService.post.mockReturnValue(throwError(() => axiosError));
+
+      await expect(
+        service.syncGuildWithMembersAndRoles(
+          guildId,
+          mockGuildData,
+          mockMembers,
+          mockRoles,
+        ),
+      ).rejects.toThrow(ApiError);
+    });
+
+    it('should handle error without message property', async () => {
+      const errorObj = {
+        code: 'UNKNOWN_ERROR',
+      };
+
+      httpService.post.mockReturnValue(throwError(() => errorObj));
+
+      await expect(
+        service.syncGuildWithMembersAndRoles(
+          guildId,
+          mockGuildData,
+          mockMembers,
+          mockRoles,
+        ),
+      ).rejects.toThrow(Error);
     });
   });
 
@@ -956,6 +1051,85 @@ describe('ApiService', () => {
     });
   });
 
+  describe('processTrackers', () => {
+    const guildId = '123456789012345678';
+
+    it('should process trackers successfully when API responds successfully', async () => {
+      const mockResponse = {
+        processed: 5,
+        trackers: ['tracker1', 'tracker2', 'tracker3', 'tracker4', 'tracker5'],
+      };
+
+      httpService.post.mockReturnValue(
+        of({
+          data: mockResponse,
+          status: 200,
+          statusText: 'OK',
+          headers: {},
+          config: {} as any,
+        }),
+      );
+
+      const result = await service.processTrackers(guildId);
+
+      expect(result).toEqual(mockResponse);
+      expect(httpService.post).toHaveBeenCalledWith(
+        '/internal/trackers/process',
+        {
+          guildId,
+        },
+      );
+    });
+
+    it('should throw ApiError when response has no data', async () => {
+      httpService.post.mockReturnValue(
+        of({
+          data: null,
+          status: 200,
+          statusText: 'OK',
+          headers: {},
+          config: {} as any,
+        }),
+      );
+
+      await expect(service.processTrackers(guildId)).rejects.toThrow(ApiError);
+    });
+
+    it('should transform AxiosError to ApiError on failure', async () => {
+      const axiosError = {
+        response: {
+          status: 404,
+          data: { message: 'Guild not found', code: 'GUILD_NOT_FOUND' },
+        },
+        isAxiosError: true,
+      } as AxiosError;
+
+      httpService.post.mockReturnValue(throwError(() => axiosError));
+
+      const error = await service
+        .processTrackers(guildId)
+        .catch((e) => e as ApiError);
+      expect(error).toBeInstanceOf(ApiError);
+      expect(error.message).toBe('Guild not found');
+    });
+
+    it('should transform network error to ApiError', async () => {
+      const axiosError = {
+        request: {},
+        message: 'Network Error',
+        isAxiosError: true,
+      } as AxiosError;
+
+      httpService.post.mockReturnValue(throwError(() => axiosError));
+
+      const error = await service
+        .processTrackers(guildId)
+        .catch((e) => e as ApiError);
+      expect(error).toBeInstanceOf(ApiError);
+      expect(error.message).toBe('Network Error');
+    });
+  });
+
   describe('error transformation edge cases', () => {
     it('should handle AxiosError with non-object response data', async () => {
       const axiosError = {
@@ -986,12 +1160,80 @@ describe('ApiService', () => {
       await expect(service.healthCheck()).rejects.toThrow(ApiError);
     });
 
+    it('should handle AxiosError with response.data as object but no message or error field', async () => {
+      const axiosError = {
+        response: {
+          status: 500,
+          data: { code: 'UNKNOWN_ERROR' },
+        },
+        message: 'Request failed',
+        isAxiosError: true,
+      } as AxiosError;
+
+      httpService.get.mockReturnValue(throwError(() => axiosError));
+
+      const error = await service.healthCheck().catch((e) => e as ApiError);
+      expect(error).toBeInstanceOf(ApiError);
+      expect(error.message).toBe('Request failed');
+    });
+
+    it('should handle AxiosError with no response but has message', async () => {
+      const axiosError = {
+        request: {},
+        message: 'Network timeout',
+        isAxiosError: true,
+      } as AxiosError;
+
+      httpService.get.mockReturnValue(throwError(() => axiosError));
+
+      const error = await service.healthCheck().catch((e) => e as ApiError);
+      expect(error).toBeInstanceOf(ApiError);
+      expect(error.message).toBe('Network timeout');
+    });
+
+    it('should handle AxiosError with no response and no message', async () => {
+      const axiosError = {
+        request: {},
+        isAxiosError: true,
+      } as AxiosError;
+
+      httpService.get.mockReturnValue(throwError(() => axiosError));
+
+      const error = await service.healthCheck().catch((e) => e as ApiError);
+      expect(error).toBeInstanceOf(ApiError);
+      expect(error.message).toBe('API request failed');
+    });
+
     it('should handle unknown error types gracefully', async () => {
       httpService.get.mockReturnValue(
         throwError(() => ({ unknown: 'object' })),
       );
 
       await expect(service.healthCheck()).rejects.toThrow(Error);
+    });
+
+    it('should handle error object with message property', async () => {
+      const errorObject = {
+        message: 'Custom error message',
+      };
+
+      httpService.get.mockReturnValue(throwError(() => errorObject));
+
+      const error = await service.healthCheck().catch((e) => e as Error);
+      expect(error).toBeInstanceOf(Error);
+      expect(error.message).toBe('Custom error message');
+    });
+
+    it('should handle error without message property', async () => {
+      const errorObject = {
+        code: 'ERROR_CODE',
+      };
+
+      httpService.get.mockReturnValue(throwError(() => errorObject));
+
+      const error = await service.healthCheck().catch((e) => e as Error);
+      expect(error).toBeInstanceOf(Error);
+      expect(error.message).toBe('Unknown error occurred');
     });
   });
 });

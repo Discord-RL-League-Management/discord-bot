@@ -3,6 +3,7 @@ import { Logger } from '@nestjs/common';
 import { INestApplication } from '@nestjs/common';
 import { ApiHealthService } from './api/api-health.service';
 import { ConfigService } from './config/config.service';
+import { bootstrap } from './main';
 
 jest.mock('@nestjs/core', () => ({
   NestFactory: {
@@ -13,9 +14,6 @@ jest.mock('@nestjs/core', () => ({
 jest.mock('./app/app.module', () => ({
   AppModule: class AppModule {},
 }));
-
-// Import bootstrap after mocks are set up
-import { bootstrap } from './main';
 
 describe('main bootstrap', () => {
   let mockApp: jest.Mocked<INestApplication>;

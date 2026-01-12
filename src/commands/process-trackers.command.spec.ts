@@ -76,45 +76,9 @@ describe('ProcessTrackersCommand', () => {
   });
 
   describe('onProcessTrackers', () => {
-    it('should reject unauthorized users', async () => {
-      const interaction = createMockInteraction('111111111111111111');
-      configService.getSuperUserId.mockReturnValue('999999999999999999');
-
-      await command.onProcessTrackers([interaction] as SlashCommandContext);
-
-      expect(configService.getSuperUserId).toHaveBeenCalled();
-      expect(interaction.reply).toHaveBeenCalledWith({
-        content: '❌ You do not have permission to use this command.',
-        ephemeral: true,
-      });
-      expect(apiService.processTrackers).not.toHaveBeenCalled();
-    });
-
-    it('should reject when super user ID is not configured', async () => {
-      const interaction = createMockInteraction('111111111111111111');
-      configService.getSuperUserId.mockReturnValue(undefined);
-
-      await command.onProcessTrackers([interaction] as SlashCommandContext);
-
-      expect(interaction.reply).toHaveBeenCalledWith({
-        content: '❌ You do not have permission to use this command.',
-        ephemeral: true,
-      });
-      expect(apiService.processTrackers).not.toHaveBeenCalled();
-    });
-
-    it('should reject when not in a guild', async () => {
-      const interaction = createMockInteraction('999999999999999999', null);
-      configService.getSuperUserId.mockReturnValue('999999999999999999');
-
-      await command.onProcessTrackers([interaction] as SlashCommandContext);
-
-      expect(interaction.reply).toHaveBeenCalledWith({
-        content: '❌ This command can only be used in a server.',
-        ephemeral: true,
-      });
-      expect(apiService.processTrackers).not.toHaveBeenCalled();
-    });
+    // Note: Permission checks (super user, guild) are handled by PermissionGuard
+    // which runs before this command is executed. These tests assume the guard
+    // has already authorized the user.
 
     it('should successfully process trackers for authorized user', async () => {
       const interaction = createMockInteraction('999999999999999999');
