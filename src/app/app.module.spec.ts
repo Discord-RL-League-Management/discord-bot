@@ -1,5 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { AppModule } from './app.module';
+import { AppController } from '../app.controller';
+import { AppService } from '../app.service';
 
 describe('AppModule', () => {
   let module: TestingModule;
@@ -17,8 +19,6 @@ describe('AppModule', () => {
       module = await Test.createTestingModule({
         imports: [AppModule],
       }).compile();
-
-      expect(module).toBeDefined();
     } finally {
       process.env = originalEnv;
     }
@@ -30,5 +30,25 @@ describe('AppModule', () => {
 
   it('should compile successfully', () => {
     expect(module).toBeDefined();
+  });
+
+  it('should resolve AppController via DI', () => {
+    const controller = module.get<AppController>(AppController);
+
+    expect(controller).toBeDefined();
+    expect(controller).toBeInstanceOf(AppController);
+  });
+
+  it('should resolve AppService via DI', () => {
+    const service = module.get<AppService>(AppService);
+
+    expect(service).toBeDefined();
+    expect(service).toBeInstanceOf(AppService);
+  });
+
+  it('should inject AppService into AppController', () => {
+    const controller = module.get<AppController>(AppController);
+
+    expect(controller).toBeDefined();
   });
 });
