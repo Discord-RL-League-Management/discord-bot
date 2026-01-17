@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { HelpCommand } from './help.command';
-import { ApiService } from '../api/api.service';
+import { ApiModule } from '../api/api.module';
 import type { SlashCommandContext } from 'necord';
 import { ChatInputCommandInteraction } from 'discord.js';
 
@@ -15,18 +15,9 @@ describe('HelpCommand', () => {
   };
 
   beforeEach(async () => {
-    const mockApiService = {
-      getGuildSettings: jest.fn(),
-    };
-
     module = await Test.createTestingModule({
-      providers: [
-        HelpCommand,
-        {
-          provide: ApiService,
-          useValue: mockApiService,
-        },
-      ],
+      imports: [ApiModule],
+      providers: [HelpCommand],
     }).compile();
 
     command = module.get<HelpCommand>(HelpCommand);
@@ -63,18 +54,10 @@ describe('HelpCommand', () => {
       const replyCall = (interaction.reply as jest.Mock).mock.calls[0][0];
       const embed = replyCall.embeds[0];
       expect(embed.data.fields).toBeDefined();
-      expect(embed.data.fields.length).toBeGreaterThan(0);
+      expect(embed.data.fields.length).toBe(1);
 
       const commandNames = embed.data.fields.map((field: any) => field.name);
-      expect(commandNames).toEqual(
-        expect.arrayContaining([
-          '/config',
-          '/help',
-          '/register',
-          '/add-tracker',
-          '/process-trackers',
-        ]),
-      );
+      expect(commandNames).toEqual(expect.arrayContaining(['/help']));
     });
 
     it('should include command descriptions', async () => {

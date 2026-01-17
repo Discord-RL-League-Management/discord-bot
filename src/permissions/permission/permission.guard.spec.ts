@@ -241,27 +241,5 @@ describe('PermissionGuard', () => {
       // Should not throw even if reply fails
       expect(errorInteraction.reply).toHaveBeenCalled();
     });
-
-    it('should get metadata for command from mapping', async () => {
-      const processTrackersInteraction = {
-        ...mockInteraction,
-        commandName: 'process-trackers',
-      } as unknown as ChatInputCommandInteraction;
-
-      const processTrackersContext = {
-        ...mockExecutionContext,
-        getArgs: jest.fn().mockReturnValue([processTrackersInteraction]),
-      } as unknown as ExecutionContext;
-
-      const result: ValidationResult = { allowed: true };
-      validatorService.validateCommandPermissions.mockResolvedValue(result);
-
-      await guard.canActivate(processTrackersContext);
-
-      expect(validatorService.validateCommandPermissions).toHaveBeenCalledWith(
-        processTrackersInteraction,
-        { requiresSuperUser: true, requiresGuild: true },
-      );
-    });
   });
 });

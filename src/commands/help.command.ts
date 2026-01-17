@@ -15,24 +15,7 @@ import { ChannelRestrictionGuard } from '../permissions/channel-restriction/chan
 export class HelpCommand {
   // Static list of commands - maintain this when adding new commands
   private readonly commands = [
-    {
-      name: 'config',
-      description: 'Get the dashboard link to configure the bot',
-    },
     { name: 'help', description: 'Show all available bot commands' },
-    {
-      name: 'register',
-      description: 'Register up to 4 Rocket League tracker URLs',
-    },
-    {
-      name: 'add-tracker',
-      description: 'Add an additional tracker URL (up to 4 total)',
-    },
-    {
-      name: 'process-trackers',
-      description:
-        'Trigger tracker data processing for this server (super user only)',
-    },
   ];
 
   @SlashCommand({

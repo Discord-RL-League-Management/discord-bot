@@ -20,15 +20,6 @@ export class PermissionGuard implements CanActivate {
 
   // Command metadata mapping - maps command names to permission requirements
   private readonly commandMetadata: Map<string, PermissionMetadata> = new Map([
-    ['process-trackers', { requiresSuperUser: true, requiresGuild: true }],
-    [
-      'config',
-      {
-        requiredPermissions: 'Administrator' as const,
-        requiresGuild: true,
-        category: 'admin',
-      },
-    ],
     // Add more commands as needed
   ]);
 
