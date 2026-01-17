@@ -2,11 +2,20 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { ExecutionContext, ForbiddenException } from '@nestjs/common';
 import { ChannelRestrictionGuard } from './channel-restriction.guard';
 import { ApiService } from '../../api/api.service';
-import { ChatInputCommandInteraction } from 'discord.js';
+import { ChatInputCommandInteraction, MessageFlags } from 'discord.js';
+import { AppLogger } from '../../common/app-logger.service';
 
 describe('ChannelRestrictionGuard', () => {
   let apiService: jest.Mocked<ApiService>;
   let module: TestingModule;
+
+  const mockLogger = {
+    log: jest.fn(),
+    error: jest.fn(),
+    warn: jest.fn(),
+    debug: jest.fn(),
+    setContext: jest.fn(),
+  };
 
   const createMockInteraction = (
     options: {
@@ -61,6 +70,10 @@ describe('ChannelRestrictionGuard', () => {
     module = await Test.createTestingModule({
       providers: [
         {
+          provide: AppLogger,
+          useValue: mockLogger,
+        },
+        {
           provide: ApiService,
           useValue: mockApiService,
         },
@@ -101,7 +114,14 @@ describe('ChannelRestrictionGuard', () => {
 
     beforeEach(() => {
       const GuardClass = ChannelRestrictionGuard.create('staff');
-      guard = new GuardClass(apiService);
+      const mockLogger = {
+        log: jest.fn(),
+        error: jest.fn(),
+        warn: jest.fn(),
+        debug: jest.fn(),
+        setContext: jest.fn(),
+      };
+      guard = new GuardClass(mockLogger, apiService);
     });
 
     it('should return true when no Discord interaction', async () => {
@@ -126,7 +146,7 @@ describe('ChannelRestrictionGuard', () => {
 
       expect(interaction.reply).toHaveBeenCalledWith({
         content: '❌ This command can only be used in servers.',
-        ephemeral: true,
+        flags: MessageFlags.Ephemeral,
       });
     });
 
@@ -188,7 +208,7 @@ describe('ChannelRestrictionGuard', () => {
 
       expect(interaction.reply).toHaveBeenCalledWith({
         content: '❌ This command can only be used in staff channels.',
-        ephemeral: true,
+        flags: MessageFlags.Ephemeral,
       });
     });
 
@@ -209,7 +229,7 @@ describe('ChannelRestrictionGuard', () => {
 
       expect(interaction.followUp).toHaveBeenCalledWith({
         content: '❌ This command can only be used in staff channels.',
-        ephemeral: true,
+        flags: MessageFlags.Ephemeral,
       });
       expect(interaction.reply).not.toHaveBeenCalled();
     });
@@ -228,7 +248,7 @@ describe('ChannelRestrictionGuard', () => {
       expect(interaction.reply).toHaveBeenCalledWith({
         content:
           'An error occurred while checking channel restrictions. Please try again later.',
-        ephemeral: true,
+        flags: MessageFlags.Ephemeral,
       });
     });
 
@@ -270,7 +290,14 @@ describe('ChannelRestrictionGuard', () => {
 
     beforeEach(() => {
       const GuardClass = ChannelRestrictionGuard.create('public');
-      guard = new GuardClass(apiService);
+      const mockLogger = {
+        log: jest.fn(),
+        error: jest.fn(),
+        warn: jest.fn(),
+        debug: jest.fn(),
+        setContext: jest.fn(),
+      };
+      guard = new GuardClass(mockLogger, apiService);
     });
 
     it('should use public_command_channels key', async () => {
@@ -289,7 +316,7 @@ describe('ChannelRestrictionGuard', () => {
 
       expect(interaction.reply).toHaveBeenCalledWith({
         content: '❌ This command can only be used in public channels.',
-        ephemeral: true,
+        flags: MessageFlags.Ephemeral,
       });
     });
   });
@@ -299,7 +326,14 @@ describe('ChannelRestrictionGuard', () => {
 
     beforeEach(() => {
       const GuardClass = ChannelRestrictionGuard.create('test');
-      guard = new GuardClass(apiService);
+      const mockLogger = {
+        log: jest.fn(),
+        error: jest.fn(),
+        warn: jest.fn(),
+        debug: jest.fn(),
+        setContext: jest.fn(),
+      };
+      guard = new GuardClass(mockLogger, apiService);
     });
 
     it('should use test_command_channels key', async () => {
@@ -318,7 +352,7 @@ describe('ChannelRestrictionGuard', () => {
 
       expect(interaction.reply).toHaveBeenCalledWith({
         content: '❌ This command can only be used in test channels.',
-        ephemeral: true,
+        flags: MessageFlags.Ephemeral,
       });
     });
   });

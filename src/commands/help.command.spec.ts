@@ -2,22 +2,40 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { HelpCommand } from './help.command';
 import { ApiModule } from '../api/api.module';
 import type { SlashCommandContext } from 'necord';
-import { ChatInputCommandInteraction } from 'discord.js';
+import { ChatInputCommandInteraction, MessageFlags } from 'discord.js';
+import { AppLogger } from '../common/app-logger.service';
 
 describe('HelpCommand', () => {
   let command: HelpCommand;
   let module: TestingModule;
 
+  const mockLogger = {
+    log: jest.fn(),
+    error: jest.fn(),
+    warn: jest.fn(),
+    debug: jest.fn(),
+    setContext: jest.fn(),
+  };
+
   const createMockInteraction = (): ChatInputCommandInteraction => {
     return {
       reply: jest.fn().mockResolvedValue(undefined),
+      user: { id: '123456789012345678' },
+      guildId: '987654321098765432',
+      channelId: '111111111111111111',
     } as unknown as ChatInputCommandInteraction;
   };
 
   beforeEach(async () => {
     module = await Test.createTestingModule({
       imports: [ApiModule],
-      providers: [HelpCommand],
+      providers: [
+        HelpCommand,
+        {
+          provide: AppLogger,
+          useValue: mockLogger,
+        },
+      ],
     }).compile();
 
     command = module.get<HelpCommand>(HelpCommand);
@@ -48,7 +66,7 @@ describe('HelpCommand', () => {
             }),
           }),
         ]),
-        ephemeral: true,
+        flags: MessageFlags.Ephemeral,
       });
 
       const replyCall = (interaction.reply as jest.Mock).mock.calls[0][0];

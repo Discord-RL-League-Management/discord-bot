@@ -3,11 +3,15 @@ import {
   ExecutionContext,
   Injectable,
   NestInterceptor,
-  Logger,
 } from '@nestjs/common';
 import { Observable, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
-import { ChatInputCommandInteraction, EmbedBuilder } from 'discord.js';
+import {
+  ChatInputCommandInteraction,
+  EmbedBuilder,
+  MessageFlags,
+} from 'discord.js';
+import { AppLogger } from '../../../common/app-logger.service';
 
 /**
  * ErrorHandlingInterceptor - Catches and handles errors from command execution
@@ -15,7 +19,9 @@ import { ChatInputCommandInteraction, EmbedBuilder } from 'discord.js';
  */
 @Injectable()
 export class ErrorHandlingInterceptor implements NestInterceptor {
-  private readonly logger = new Logger(ErrorHandlingInterceptor.name);
+  constructor(private readonly logger: AppLogger) {
+    this.logger.setContext(ErrorHandlingInterceptor.name);
+  }
 
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
     const interaction = this.getInteraction(context);
@@ -33,7 +39,7 @@ export class ErrorHandlingInterceptor implements NestInterceptor {
             .setTimestamp();
 
           interaction
-            .reply({ embeds: [embed], ephemeral: true })
+            .reply({ embeds: [embed], flags: MessageFlags.Ephemeral })
             .catch((replyError) => {
               this.logger.error(
                 'Failed to send error message to user:',
@@ -52,7 +58,7 @@ export class ErrorHandlingInterceptor implements NestInterceptor {
             .setTimestamp();
 
           interaction
-            .followUp({ embeds: [embed], ephemeral: true })
+            .followUp({ embeds: [embed], flags: MessageFlags.Ephemeral })
             .catch((followUpError) => {
               this.logger.error(
                 'Failed to send error follow-up to user:',

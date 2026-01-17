@@ -1,7 +1,8 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { GuildMember, PartialGuildMember } from 'discord.js';
 import { ApiService } from '../api/api.service';
 import { validateDiscordId } from '../common/utils/discord-id.validator';
+import { AppLogger } from '../common/app-logger.service';
 
 /**
  * MemberService - Single Responsibility: Member business logic orchestration
@@ -11,9 +12,12 @@ import { validateDiscordId } from '../common/utils/discord-id.validator';
  */
 @Injectable()
 export class MemberService {
-  private readonly logger = new Logger(MemberService.name);
-
-  constructor(private readonly apiService: ApiService) {}
+  constructor(
+    private readonly logger: AppLogger,
+    private readonly apiService: ApiService,
+  ) {
+    this.logger.setContext(MemberService.name);
+  }
 
   /**
    * Handle member join event

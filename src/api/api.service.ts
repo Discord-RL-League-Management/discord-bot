@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
 import { firstValueFrom } from 'rxjs';
 import { AxiosError } from 'axios';
@@ -7,6 +7,7 @@ import { ApiError } from './api-error.interface';
 import { HealthCheckResponse } from './health-check-response.interface';
 import { CreateGuildDto } from './dto/create-guild.dto';
 import { validateDiscordId } from '../common/utils/discord-id.validator';
+import { AppLogger } from '../common/app-logger.service';
 
 /**
  * ApiService - Single Responsibility: HTTP communication with league-api only
@@ -16,12 +17,13 @@ import { validateDiscordId } from '../common/utils/discord-id.validator';
  */
 @Injectable()
 export class ApiService {
-  private readonly logger = new Logger(ApiService.name);
-
   constructor(
     private readonly httpService: HttpService,
     private readonly configService: ConfigService,
-  ) {}
+    private readonly logger: AppLogger,
+  ) {
+    this.logger.setContext(ApiService.name);
+  }
 
   /**
    * Type guard to check if error is an AxiosError

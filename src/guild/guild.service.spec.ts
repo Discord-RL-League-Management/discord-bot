@@ -1,8 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { Logger } from '@nestjs/common';
 import { Guild } from 'discord.js';
 import { GuildService } from './guild.service';
 import { ApiService } from '../api/api.service';
+import { AppLogger } from '../common/app-logger.service';
 
 describe('GuildService', () => {
   let service: GuildService;
@@ -29,6 +29,14 @@ describe('GuildService', () => {
     } as unknown as Guild;
   };
 
+  const mockLogger = {
+    log: jest.fn(),
+    error: jest.fn(),
+    warn: jest.fn(),
+    debug: jest.fn(),
+    setContext: jest.fn(),
+  };
+
   beforeEach(async () => {
     mockApiService.upsertGuild.mockClear();
     mockApiService.removeGuild.mockClear();
@@ -36,6 +44,10 @@ describe('GuildService', () => {
     module = await Test.createTestingModule({
       providers: [
         GuildService,
+        {
+          provide: AppLogger,
+          useValue: mockLogger,
+        },
         {
           provide: ApiService,
           useValue: mockApiService,
@@ -47,8 +59,8 @@ describe('GuildService', () => {
     apiService = module.get(ApiService);
 
     loggerSpy = {
-      log: jest.spyOn(Logger.prototype, 'log').mockImplementation(),
-      error: jest.spyOn(Logger.prototype, 'error').mockImplementation(),
+      log: jest.spyOn(mockLogger, 'log'),
+      error: jest.spyOn(mockLogger, 'error'),
     };
 
     jest.clearAllMocks();

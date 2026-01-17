@@ -2,12 +2,25 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { ExecutionContext, ForbiddenException } from '@nestjs/common';
 import { StaffOnlyGuard } from './staff-only.guard';
 import { ApiService } from '../../api/api.service';
-import { ChatInputCommandInteraction, GuildMember } from 'discord.js';
+import {
+  ChatInputCommandInteraction,
+  GuildMember,
+  MessageFlags,
+} from 'discord.js';
+import { AppLogger } from '../../common/app-logger.service';
 
 describe('StaffOnlyGuard', () => {
   let guard: StaffOnlyGuard;
   let apiService: jest.Mocked<ApiService>;
   let module: TestingModule;
+
+  const mockLogger = {
+    log: jest.fn(),
+    error: jest.fn(),
+    warn: jest.fn(),
+    debug: jest.fn(),
+    setContext: jest.fn(),
+  };
 
   const createMockInteraction = (
     options: {
@@ -74,6 +87,10 @@ describe('StaffOnlyGuard', () => {
       providers: [
         StaffOnlyGuard,
         {
+          provide: AppLogger,
+          useValue: mockLogger,
+        },
+        {
           provide: ApiService,
           useValue: mockApiService,
         },
@@ -117,7 +134,7 @@ describe('StaffOnlyGuard', () => {
 
       expect(interaction.reply).toHaveBeenCalledWith({
         content: '❌ This command can only be used in servers.',
-        ephemeral: true,
+        flags: MessageFlags.Ephemeral,
       });
     });
 
@@ -133,7 +150,7 @@ describe('StaffOnlyGuard', () => {
 
       expect(interaction.reply).toHaveBeenCalledWith({
         content: '❌ Unable to verify permissions.',
-        ephemeral: true,
+        flags: MessageFlags.Ephemeral,
       });
       expect(apiService.getGuildSettings).not.toHaveBeenCalled();
     });
@@ -171,7 +188,7 @@ describe('StaffOnlyGuard', () => {
       expect(interaction.reply).toHaveBeenCalledWith({
         content:
           '❌ You do not have permission to use this command. This command is restricted to staff members.',
-        ephemeral: true,
+        flags: MessageFlags.Ephemeral,
       });
     });
 
@@ -191,7 +208,7 @@ describe('StaffOnlyGuard', () => {
       expect(interaction.reply).toHaveBeenCalledWith({
         content:
           '❌ You do not have permission to use this command. This command is restricted to staff members.',
-        ephemeral: true,
+        flags: MessageFlags.Ephemeral,
       });
     });
 
@@ -222,7 +239,7 @@ describe('StaffOnlyGuard', () => {
       expect(interaction.reply).toHaveBeenCalledWith({
         content:
           'An error occurred while checking staff permissions. Please try again later.',
-        ephemeral: true,
+        flags: MessageFlags.Ephemeral,
       });
     });
 
@@ -260,7 +277,7 @@ describe('StaffOnlyGuard', () => {
       expect(interaction.followUp).toHaveBeenCalledWith({
         content:
           '❌ You do not have permission to use this command. This command is restricted to staff members.',
-        ephemeral: true,
+        flags: MessageFlags.Ephemeral,
       });
       expect(interaction.reply).not.toHaveBeenCalled();
     });
@@ -312,7 +329,7 @@ describe('StaffOnlyGuard', () => {
       expect(interaction.reply).toHaveBeenCalledWith({
         content:
           'An error occurred while checking staff permissions. Please try again later.',
-        ephemeral: true,
+        flags: MessageFlags.Ephemeral,
       });
     });
   });

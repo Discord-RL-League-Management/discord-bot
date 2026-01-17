@@ -7,11 +7,20 @@ import { HealthCheckResponse } from './health-check-response.interface';
 import { CreateGuildDto } from './dto/create-guild.dto';
 import { of, throwError } from 'rxjs';
 import { AxiosError } from 'axios';
+import { AppLogger } from '../common/app-logger.service';
 
 describe('ApiService', () => {
   let service: ApiService;
   let httpService: jest.Mocked<HttpService>;
   let module: TestingModule;
+
+  const mockLogger = {
+    log: jest.fn(),
+    error: jest.fn(),
+    warn: jest.fn(),
+    debug: jest.fn(),
+    setContext: jest.fn(),
+  };
 
   beforeEach(async () => {
     const mockHttpService = {
@@ -29,6 +38,10 @@ describe('ApiService', () => {
     module = await Test.createTestingModule({
       providers: [
         ApiService,
+        {
+          provide: AppLogger,
+          useValue: mockLogger,
+        },
         {
           provide: HttpService,
           useValue: mockHttpService,

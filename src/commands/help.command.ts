@@ -1,8 +1,9 @@
 import { Injectable, UseGuards } from '@nestjs/common';
 import { SlashCommand, Context } from 'necord';
 import type { SlashCommandContext } from 'necord';
-import { EmbedBuilder } from 'discord.js';
+import { EmbedBuilder, MessageFlags } from 'discord.js';
 import { ChannelRestrictionGuard } from '../permissions/channel-restriction/channel-restriction.guard';
+import { AppLogger } from '../common/app-logger.service';
 
 /**
  * HelpCommand - Single Responsibility: Handle /help command
@@ -18,6 +19,10 @@ export class HelpCommand {
     { name: 'help', description: 'Show all available bot commands' },
   ];
 
+  constructor(private readonly logger: AppLogger) {
+    this.logger.setContext(HelpCommand.name);
+  }
+
   @SlashCommand({
     name: 'help',
     description: 'Show all available bot commands',
@@ -25,6 +30,17 @@ export class HelpCommand {
   public async onHelp(
     @Context() [interaction]: SlashCommandContext,
   ): Promise<void> {
+    const guildId = interaction.guildId || 'DM';
+    const channelId = interaction.channelId || 'unknown';
+    const userId = interaction.user.id;
+
+    this.logger.log('Help command executed', {
+      userId,
+      guildId,
+      channelId,
+      commandName: 'help',
+    });
+
     const embed = new EmbedBuilder()
       .setTitle('📖 Bot Commands')
       .setDescription('Here are all available commands:')
@@ -38,6 +54,9 @@ export class HelpCommand {
       });
     });
 
-    await interaction.reply({ embeds: [embed], ephemeral: true });
+    await interaction.reply({
+      embeds: [embed],
+      flags: MessageFlags.Ephemeral,
+    });
   }
 }

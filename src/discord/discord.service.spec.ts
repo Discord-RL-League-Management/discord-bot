@@ -1,8 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { Logger } from '@nestjs/common';
 import { DiscordService } from './discord.service';
 import { GuildSyncService } from '../guild/guild-sync.service';
 import type { ContextOf } from 'necord';
+import { AppLogger } from '../common/app-logger.service';
 
 describe('DiscordService', () => {
   let service: DiscordService;
@@ -19,12 +19,24 @@ describe('DiscordService', () => {
       .mockResolvedValue({ synced: 0, total: 0, failed: 0 }),
   };
 
+  const mockLogger = {
+    log: jest.fn(),
+    error: jest.fn(),
+    warn: jest.fn(),
+    debug: jest.fn(),
+    setContext: jest.fn(),
+  };
+
   beforeEach(async () => {
     mockGuildSyncService.syncAllGuilds.mockClear();
 
     module = await Test.createTestingModule({
       providers: [
         DiscordService,
+        {
+          provide: AppLogger,
+          useValue: mockLogger,
+        },
         {
           provide: GuildSyncService,
           useValue: mockGuildSyncService,
@@ -34,11 +46,11 @@ describe('DiscordService', () => {
 
     service = module.get<DiscordService>(DiscordService);
 
-    // Spy on Logger prototype methods to verify logging behavior
+    // Spy on mock Logger methods to verify logging behavior
     loggerSpy = {
-      log: jest.spyOn(Logger.prototype, 'log').mockImplementation(),
-      warn: jest.spyOn(Logger.prototype, 'warn').mockImplementation(),
-      error: jest.spyOn(Logger.prototype, 'error').mockImplementation(),
+      log: jest.spyOn(mockLogger, 'log'),
+      warn: jest.spyOn(mockLogger, 'warn'),
+      error: jest.spyOn(mockLogger, 'error'),
     };
 
     jest.clearAllMocks();

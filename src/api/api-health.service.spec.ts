@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { Logger } from '@nestjs/common';
 import { ApiHealthService } from './api-health.service';
 import { ApiService } from './api.service';
+import { AppLogger } from '../common/app-logger.service';
 
 describe('ApiHealthService', () => {
   let service: ApiHealthService;
@@ -10,6 +10,14 @@ describe('ApiHealthService', () => {
   let loggerSpy: {
     log: jest.SpyInstance;
     error: jest.SpyInstance;
+  };
+
+  const mockLogger = {
+    log: jest.fn(),
+    error: jest.fn(),
+    warn: jest.fn(),
+    debug: jest.fn(),
+    setContext: jest.fn(),
   };
 
   beforeEach(async () => {
@@ -21,6 +29,10 @@ describe('ApiHealthService', () => {
       providers: [
         ApiHealthService,
         {
+          provide: AppLogger,
+          useValue: mockLogger,
+        },
+        {
           provide: ApiService,
           useValue: mockApiService,
         },
@@ -31,8 +43,8 @@ describe('ApiHealthService', () => {
     apiService = module.get(ApiService);
 
     loggerSpy = {
-      log: jest.spyOn(Logger.prototype, 'log').mockImplementation(),
-      error: jest.spyOn(Logger.prototype, 'error').mockImplementation(),
+      log: jest.spyOn(mockLogger, 'log'),
+      error: jest.spyOn(mockLogger, 'error'),
     };
 
     jest.clearAllMocks();

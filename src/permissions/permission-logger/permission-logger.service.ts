@@ -1,7 +1,8 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { ChatInputCommandInteraction } from 'discord.js';
 import { ValidationResult } from '../permission-validator/permission-validator.service';
 import { PermissionMetadata } from '../permission-metadata.interface';
+import { AppLogger } from '../../common/app-logger.service';
 
 /**
  * PermissionLoggerService - Single Responsibility: Log permission-related events
@@ -11,11 +12,14 @@ import { PermissionMetadata } from '../permission-metadata.interface';
  */
 @Injectable()
 export class PermissionLoggerService {
-  private readonly logger = new Logger(PermissionLoggerService.name);
+  constructor(private readonly logger: AppLogger) {
+    this.logger.setContext(PermissionLoggerService.name);
+  }
 
   /**
-   * Log command execution with permissions
-   * Single Responsibility: Logging execution events
+   * Log permission validation for command
+   * Single Responsibility: Logging permission validation events
+   * Note: This logs permission validation, not command execution
    */
   logCommandExecution(
     interaction: ChatInputCommandInteraction,
@@ -27,7 +31,7 @@ export class PermissionLoggerService {
     const userId = interaction.user.id;
     const commandName = interaction.commandName;
 
-    this.logger.log(`Command execution: ${commandName}`, {
+    this.logger.log(`Permission validation: ${commandName}`, {
       userId,
       guildId,
       channelId,

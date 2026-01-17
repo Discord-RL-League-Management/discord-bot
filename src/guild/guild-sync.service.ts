@@ -1,7 +1,8 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { Client, Guild } from 'discord.js';
 import { ApiService } from '../api/api.service';
 import { CreateGuildDto } from '../api/dto/create-guild.dto';
+import { AppLogger } from '../common/app-logger.service';
 
 interface SyncResult {
   total: number;
@@ -18,9 +19,12 @@ interface SyncResult {
  */
 @Injectable()
 export class GuildSyncService {
-  private readonly logger = new Logger(GuildSyncService.name);
-
-  constructor(private readonly apiService: ApiService) {}
+  constructor(
+    private readonly logger: AppLogger,
+    private readonly apiService: ApiService,
+  ) {
+    this.logger.setContext(GuildSyncService.name);
+  }
 
   /**
    * Sync all guilds from Discord client with database

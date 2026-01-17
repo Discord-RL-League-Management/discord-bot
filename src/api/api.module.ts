@@ -5,10 +5,12 @@ import { ApiHealthService } from './api-health.service';
 import { ApiHealthGuard } from './api-health.guard';
 import { ConfigModule } from '../config/config.module';
 import { ConfigService } from '../config/config.service';
+import { LoggerModule } from '../common/logger.module';
 
 @Module({
   imports: [
     ConfigModule,
+    LoggerModule,
     HttpModule.registerAsync({
       imports: [ConfigModule],
       useFactory: (configService: ConfigService) => ({
