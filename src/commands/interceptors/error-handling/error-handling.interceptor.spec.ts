@@ -2,12 +2,21 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { ExecutionContext, CallHandler } from '@nestjs/common';
 import { ErrorHandlingInterceptor } from './error-handling.interceptor';
 import { throwError, of } from 'rxjs';
-import { ChatInputCommandInteraction, User } from 'discord.js';
+import { ChatInputCommandInteraction, User, MessageFlags } from 'discord.js';
 import { AxiosError } from 'axios';
+import { AppLogger } from '../../../common/app-logger.service';
 
 describe('ErrorHandlingInterceptor', () => {
   let interceptor: ErrorHandlingInterceptor;
   let module: TestingModule;
+
+  const mockLogger = {
+    log: jest.fn(),
+    error: jest.fn(),
+    warn: jest.fn(),
+    debug: jest.fn(),
+    setContext: jest.fn(),
+  };
 
   const createMockInteraction = (
     options: {
@@ -56,7 +65,13 @@ describe('ErrorHandlingInterceptor', () => {
 
   beforeEach(async () => {
     module = await Test.createTestingModule({
-      providers: [ErrorHandlingInterceptor],
+      providers: [
+        ErrorHandlingInterceptor,
+        {
+          provide: AppLogger,
+          useValue: mockLogger,
+        },
+      ],
     }).compile();
 
     interceptor = module.get<ErrorHandlingInterceptor>(
@@ -109,7 +124,7 @@ describe('ErrorHandlingInterceptor', () => {
                 }),
               }),
             ]),
-            ephemeral: true,
+            flags: MessageFlags.Ephemeral,
           });
           done();
         },
@@ -135,7 +150,7 @@ describe('ErrorHandlingInterceptor', () => {
                 }),
               }),
             ]),
-            ephemeral: true,
+            flags: MessageFlags.Ephemeral,
           });
           expect(interaction.reply).not.toHaveBeenCalled();
           done();
@@ -162,7 +177,7 @@ describe('ErrorHandlingInterceptor', () => {
                 }),
               }),
             ]),
-            ephemeral: true,
+            flags: MessageFlags.Ephemeral,
           });
           expect(interaction.reply).not.toHaveBeenCalled();
           done();

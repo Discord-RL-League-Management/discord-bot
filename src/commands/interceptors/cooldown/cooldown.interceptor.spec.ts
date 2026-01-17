@@ -6,11 +6,20 @@ import {
 } from '@nestjs/common';
 import { CooldownInterceptor } from './cooldown.interceptor';
 import { of } from 'rxjs';
-import { ChatInputCommandInteraction, User } from 'discord.js';
+import { ChatInputCommandInteraction, User, MessageFlags } from 'discord.js';
+import { AppLogger } from '../../../common/app-logger.service';
 
 describe('CooldownInterceptor', () => {
   let interceptor: CooldownInterceptor;
   let module: TestingModule;
+
+  const mockLogger = {
+    log: jest.fn(),
+    error: jest.fn(),
+    warn: jest.fn(),
+    debug: jest.fn(),
+    setContext: jest.fn(),
+  };
 
   const createMockInteraction = (
     userId: string,
@@ -52,7 +61,13 @@ describe('CooldownInterceptor', () => {
 
   beforeEach(async () => {
     module = await Test.createTestingModule({
-      providers: [CooldownInterceptor],
+      providers: [
+        CooldownInterceptor,
+        {
+          provide: AppLogger,
+          useValue: mockLogger,
+        },
+      ],
     }).compile();
 
     interceptor = module.get<CooldownInterceptor>(CooldownInterceptor);
@@ -146,7 +161,7 @@ describe('CooldownInterceptor', () => {
         error: () => {
           expect(interaction.reply).toHaveBeenCalledWith({
             content: expect.stringContaining('Please wait'),
-            ephemeral: true,
+            flags: MessageFlags.Ephemeral,
           });
           done();
         },
@@ -169,7 +184,7 @@ describe('CooldownInterceptor', () => {
         error: () => {
           expect(interaction.followUp).toHaveBeenCalledWith({
             content: expect.stringContaining('Please wait'),
-            ephemeral: true,
+            flags: MessageFlags.Ephemeral,
           });
           expect(interaction.reply).not.toHaveBeenCalled();
           done();
@@ -193,7 +208,7 @@ describe('CooldownInterceptor', () => {
         error: () => {
           expect(interaction.followUp).toHaveBeenCalledWith({
             content: expect.stringContaining('Please wait'),
-            ephemeral: true,
+            flags: MessageFlags.Ephemeral,
           });
           expect(interaction.reply).not.toHaveBeenCalled();
           done();

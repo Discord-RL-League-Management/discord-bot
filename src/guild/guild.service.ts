@@ -1,7 +1,8 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { Guild } from 'discord.js';
 import { ApiService } from '../api/api.service';
 import { CreateGuildDto } from '../api/dto/create-guild.dto';
+import { AppLogger } from '../common/app-logger.service';
 
 /**
  * GuildService - Single Responsibility: Guild business logic orchestration
@@ -11,9 +12,12 @@ import { CreateGuildDto } from '../api/dto/create-guild.dto';
  */
 @Injectable()
 export class GuildService {
-  private readonly logger = new Logger(GuildService.name);
-
-  constructor(private readonly apiService: ApiService) {}
+  constructor(
+    private readonly logger: AppLogger,
+    private readonly apiService: ApiService,
+  ) {
+    this.logger.setContext(GuildService.name);
+  }
 
   /**
    * Handle guild join event

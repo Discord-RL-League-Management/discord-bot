@@ -2,12 +2,25 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { ExecutionContext, ForbiddenException } from '@nestjs/common';
 import { TestCommandGuard } from './test-command.guard';
 import { ApiService } from '../../api/api.service';
-import { ChatInputCommandInteraction, GuildMember } from 'discord.js';
+import {
+  ChatInputCommandInteraction,
+  GuildMember,
+  MessageFlags,
+} from 'discord.js';
+import { AppLogger } from '../../common/app-logger.service';
 
 describe('TestCommandGuard', () => {
   let guard: TestCommandGuard;
   let apiService: jest.Mocked<ApiService>;
   let module: TestingModule;
+
+  const mockLogger = {
+    log: jest.fn(),
+    error: jest.fn(),
+    warn: jest.fn(),
+    debug: jest.fn(),
+    setContext: jest.fn(),
+  };
 
   const createMockInteraction = (
     options: {
@@ -77,6 +90,10 @@ describe('TestCommandGuard', () => {
       providers: [
         TestCommandGuard,
         {
+          provide: AppLogger,
+          useValue: mockLogger,
+        },
+        {
           provide: ApiService,
           useValue: mockApiService,
         },
@@ -120,7 +137,7 @@ describe('TestCommandGuard', () => {
 
       expect(interaction.reply).toHaveBeenCalledWith({
         content: '❌ This command can only be used in servers.',
-        ephemeral: true,
+        flags: MessageFlags.Ephemeral,
       });
     });
 
@@ -143,7 +160,7 @@ describe('TestCommandGuard', () => {
 
       expect(interaction.reply).toHaveBeenCalledWith({
         content: '❌ This command can only be used in test channels.',
-        ephemeral: true,
+        flags: MessageFlags.Ephemeral,
       });
     });
 
@@ -165,7 +182,7 @@ describe('TestCommandGuard', () => {
 
       expect(interaction.reply).toHaveBeenCalledWith({
         content: '❌ Unable to verify permissions.',
-        ephemeral: true,
+        flags: MessageFlags.Ephemeral,
       });
     });
 
@@ -189,7 +206,7 @@ describe('TestCommandGuard', () => {
       expect(interaction.reply).toHaveBeenCalledWith({
         content:
           '❌ You do not have permission to use this command. This command is restricted to staff members.',
-        ephemeral: true,
+        flags: MessageFlags.Ephemeral,
       });
     });
 
@@ -267,7 +284,7 @@ describe('TestCommandGuard', () => {
       expect(interaction.reply).toHaveBeenCalledWith({
         content:
           'An error occurred while checking permissions. Please try again later.',
-        ephemeral: true,
+        flags: MessageFlags.Ephemeral,
       });
     });
 
@@ -292,7 +309,7 @@ describe('TestCommandGuard', () => {
       expect(interaction.reply).toHaveBeenCalledWith({
         content:
           'An error occurred while checking permissions. Please try again later.',
-        ephemeral: true,
+        flags: MessageFlags.Ephemeral,
       });
     });
 
@@ -335,7 +352,7 @@ describe('TestCommandGuard', () => {
       expect(interaction.followUp).toHaveBeenCalledWith({
         content:
           '❌ You do not have permission to use this command. This command is restricted to staff members.',
-        ephemeral: true,
+        flags: MessageFlags.Ephemeral,
       });
       expect(interaction.reply).not.toHaveBeenCalled();
     });
@@ -380,7 +397,7 @@ describe('TestCommandGuard', () => {
 
       expect(interaction.reply).toHaveBeenCalledWith({
         content: '❌ This command can only be used in test channels.',
-        ephemeral: true,
+        flags: MessageFlags.Ephemeral,
       });
     });
   });

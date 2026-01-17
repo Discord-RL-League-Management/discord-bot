@@ -2,11 +2,15 @@ import {
   CanActivate,
   ExecutionContext,
   Injectable,
-  Logger,
   ForbiddenException,
 } from '@nestjs/common';
-import { ChatInputCommandInteraction, GuildMember } from 'discord.js';
+import {
+  ChatInputCommandInteraction,
+  GuildMember,
+  MessageFlags,
+} from 'discord.js';
 import { ApiService } from '../../api/api.service';
+import { AppLogger } from '../../common/app-logger.service';
 
 /**
  * StaffOnlyGuard - Guard that validates user has staff role
@@ -14,9 +18,12 @@ import { ApiService } from '../../api/api.service';
  */
 @Injectable()
 export class StaffOnlyGuard implements CanActivate {
-  private readonly logger = new Logger(StaffOnlyGuard.name);
-
-  constructor(private readonly apiService: ApiService) {}
+  constructor(
+    private readonly logger: AppLogger,
+    private readonly apiService: ApiService,
+  ) {
+    this.logger.setContext(StaffOnlyGuard.name);
+  }
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const interaction = this.getInteraction(context);
@@ -146,12 +153,12 @@ export class StaffOnlyGuard implements CanActivate {
       if (interaction.replied || interaction.deferred) {
         await interaction.followUp({
           content: reason,
-          ephemeral: true,
+          flags: MessageFlags.Ephemeral,
         });
       } else {
         await interaction.reply({
           content: reason,
-          ephemeral: true,
+          flags: MessageFlags.Ephemeral,
         });
       }
     } catch (error: unknown) {

@@ -1,30 +1,39 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { HelpCommand } from './help.command';
-import { ApiService } from '../api/api.service';
+import { ApiModule } from '../api/api.module';
 import type { SlashCommandContext } from 'necord';
-import { ChatInputCommandInteraction } from 'discord.js';
+import { ChatInputCommandInteraction, MessageFlags } from 'discord.js';
+import { AppLogger } from '../common/app-logger.service';
 
 describe('HelpCommand', () => {
   let command: HelpCommand;
   let module: TestingModule;
 
+  const mockLogger = {
+    log: jest.fn(),
+    error: jest.fn(),
+    warn: jest.fn(),
+    debug: jest.fn(),
+    setContext: jest.fn(),
+  };
+
   const createMockInteraction = (): ChatInputCommandInteraction => {
     return {
       reply: jest.fn().mockResolvedValue(undefined),
+      user: { id: '123456789012345678' },
+      guildId: '987654321098765432',
+      channelId: '111111111111111111',
     } as unknown as ChatInputCommandInteraction;
   };
 
   beforeEach(async () => {
-    const mockApiService = {
-      getGuildSettings: jest.fn(),
-    };
-
     module = await Test.createTestingModule({
+      imports: [ApiModule],
       providers: [
         HelpCommand,
         {
-          provide: ApiService,
-          useValue: mockApiService,
+          provide: AppLogger,
+          useValue: mockLogger,
         },
       ],
     }).compile();
@@ -57,24 +66,16 @@ describe('HelpCommand', () => {
             }),
           }),
         ]),
-        ephemeral: true,
+        flags: MessageFlags.Ephemeral,
       });
 
       const replyCall = (interaction.reply as jest.Mock).mock.calls[0][0];
       const embed = replyCall.embeds[0];
       expect(embed.data.fields).toBeDefined();
-      expect(embed.data.fields.length).toBeGreaterThan(0);
+      expect(embed.data.fields.length).toBe(1);
 
       const commandNames = embed.data.fields.map((field: any) => field.name);
-      expect(commandNames).toEqual(
-        expect.arrayContaining([
-          '/config',
-          '/help',
-          '/register',
-          '/add-tracker',
-          '/process-trackers',
-        ]),
-      );
+      expect(commandNames).toEqual(expect.arrayContaining(['/help']));
     });
 
     it('should include command descriptions', async () => {

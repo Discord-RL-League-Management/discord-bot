@@ -3,8 +3,9 @@ import { ExecutionContext, ForbiddenException } from '@nestjs/common';
 import { PermissionGuard } from './permission.guard';
 import { PermissionValidatorService } from '../permission-validator/permission-validator.service';
 import { PermissionLoggerService } from '../permission-logger/permission-logger.service';
-import { ChatInputCommandInteraction } from 'discord.js';
+import { ChatInputCommandInteraction, MessageFlags } from 'discord.js';
 import { ValidationResult } from '../permission-validator/permission-validator.service';
+import { AppLogger } from '../../common/app-logger.service';
 
 describe('PermissionGuard', () => {
   let guard: PermissionGuard;
@@ -12,6 +13,14 @@ describe('PermissionGuard', () => {
   let loggerService: jest.Mocked<PermissionLoggerService>;
   let mockExecutionContext: ExecutionContext;
   let module: TestingModule;
+
+  const mockLogger = {
+    log: jest.fn(),
+    error: jest.fn(),
+    warn: jest.fn(),
+    debug: jest.fn(),
+    setContext: jest.fn(),
+  };
 
   const mockInteraction = {
     user: { id: '123456789012345678' },
@@ -37,6 +46,10 @@ describe('PermissionGuard', () => {
     module = await Test.createTestingModule({
       providers: [
         PermissionGuard,
+        {
+          provide: AppLogger,
+          useValue: mockLogger,
+        },
         {
           provide: PermissionValidatorService,
           useValue: mockValidatorService,
@@ -120,7 +133,7 @@ describe('PermissionGuard', () => {
       );
       expect(mockInteraction.reply).toHaveBeenCalledWith({
         content: 'You do not have permission',
-        ephemeral: true,
+        flags: MessageFlags.Ephemeral,
       });
     });
 
@@ -137,7 +150,7 @@ describe('PermissionGuard', () => {
 
       expect(mockInteraction.reply).toHaveBeenCalledWith({
         content: 'Permission denied',
-        ephemeral: true,
+        flags: MessageFlags.Ephemeral,
       });
       expect(mockInteraction.followUp).not.toHaveBeenCalled();
     });
@@ -165,7 +178,7 @@ describe('PermissionGuard', () => {
 
       expect(repliedInteraction.followUp).toHaveBeenCalledWith({
         content: 'Permission denied',
-        ephemeral: true,
+        flags: MessageFlags.Ephemeral,
       });
       expect(repliedInteraction.reply).not.toHaveBeenCalled();
     });
@@ -186,7 +199,7 @@ describe('PermissionGuard', () => {
       );
       expect(mockInteraction.reply).toHaveBeenCalledWith({
         content: '❌ You do not have permission to use this command.',
-        ephemeral: true,
+        flags: MessageFlags.Ephemeral,
       });
     });
 
@@ -201,7 +214,7 @@ describe('PermissionGuard', () => {
       expect(mockInteraction.reply).toHaveBeenCalledWith({
         content:
           'An error occurred while checking permissions. Please try again later.',
-        ephemeral: true,
+        flags: MessageFlags.Ephemeral,
       });
     });
 
@@ -240,28 +253,6 @@ describe('PermissionGuard', () => {
 
       // Should not throw even if reply fails
       expect(errorInteraction.reply).toHaveBeenCalled();
-    });
-
-    it('should get metadata for command from mapping', async () => {
-      const processTrackersInteraction = {
-        ...mockInteraction,
-        commandName: 'process-trackers',
-      } as unknown as ChatInputCommandInteraction;
-
-      const processTrackersContext = {
-        ...mockExecutionContext,
-        getArgs: jest.fn().mockReturnValue([processTrackersInteraction]),
-      } as unknown as ExecutionContext;
-
-      const result: ValidationResult = { allowed: true };
-      validatorService.validateCommandPermissions.mockResolvedValue(result);
-
-      await guard.canActivate(processTrackersContext);
-
-      expect(validatorService.validateCommandPermissions).toHaveBeenCalledWith(
-        processTrackersInteraction,
-        { requiresSuperUser: true, requiresGuild: true },
-      );
     });
   });
 });

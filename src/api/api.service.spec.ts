@@ -7,11 +7,20 @@ import { HealthCheckResponse } from './health-check-response.interface';
 import { CreateGuildDto } from './dto/create-guild.dto';
 import { of, throwError } from 'rxjs';
 import { AxiosError } from 'axios';
+import { AppLogger } from '../common/app-logger.service';
 
 describe('ApiService', () => {
   let service: ApiService;
   let httpService: jest.Mocked<HttpService>;
   let module: TestingModule;
+
+  const mockLogger = {
+    log: jest.fn(),
+    error: jest.fn(),
+    warn: jest.fn(),
+    debug: jest.fn(),
+    setContext: jest.fn(),
+  };
 
   beforeEach(async () => {
     const mockHttpService = {
@@ -29,6 +38,10 @@ describe('ApiService', () => {
     module = await Test.createTestingModule({
       providers: [
         ApiService,
+        {
+          provide: AppLogger,
+          useValue: mockLogger,
+        },
         {
           provide: HttpService,
           useValue: mockHttpService,
@@ -887,246 +900,6 @@ describe('ApiService', () => {
       );
 
       await expect(service.getGuildSettings(guildId)).rejects.toThrow(ApiError);
-    });
-  });
-
-  describe('registerTrackers', () => {
-    const userId = '111111111111111111';
-    const urls = ['https://op.gg/summoner/user1', 'https://u.gg/user1'];
-    const userData = {
-      username: 'testuser',
-      globalName: 'Test User',
-      avatar: 'avatar_url',
-    };
-
-    it('should register trackers successfully with all parameters', async () => {
-      const mockResponse = { registered: true, trackerCount: 2 };
-
-      httpService.post.mockReturnValue(
-        of({
-          data: mockResponse,
-          status: 200,
-          statusText: 'OK',
-          headers: {},
-          config: {} as any,
-        }),
-      );
-
-      const result = await service.registerTrackers(
-        userId,
-        urls,
-        userData,
-        'channel123',
-        'token123',
-      );
-
-      expect(result).toEqual(mockResponse);
-      expect(httpService.post).toHaveBeenCalledWith(
-        '/internal/trackers/register-multiple',
-        {
-          userId,
-          urls,
-          userData,
-          channelId: 'channel123',
-          interactionToken: 'token123',
-        },
-      );
-    });
-
-    it('should register trackers without optional parameters', async () => {
-      const mockResponse = { registered: true };
-
-      httpService.post.mockReturnValue(
-        of({
-          data: mockResponse,
-          status: 200,
-          statusText: 'OK',
-          headers: {},
-          config: {} as any,
-        }),
-      );
-
-      await service.registerTrackers(userId, urls);
-
-      expect(httpService.post).toHaveBeenCalledWith(
-        '/internal/trackers/register-multiple',
-        {
-          userId,
-          urls,
-          userData: undefined,
-          channelId: undefined,
-          interactionToken: undefined,
-        },
-      );
-    });
-
-    it('should throw ApiError when response has no data', async () => {
-      httpService.post.mockReturnValue(
-        of({
-          data: null,
-          status: 200,
-          statusText: 'OK',
-          headers: {},
-          config: {} as any,
-        }),
-      );
-
-      await expect(
-        service.registerTrackers(userId, urls, userData),
-      ).rejects.toThrow(ApiError);
-    });
-  });
-
-  describe('addTracker', () => {
-    const userId = '111111111111111111';
-    const url = 'https://op.gg/summoner/user1';
-
-    it('should add tracker successfully with all parameters', async () => {
-      const mockResponse = { added: true };
-
-      httpService.post.mockReturnValue(
-        of({
-          data: mockResponse,
-          status: 200,
-          statusText: 'OK',
-          headers: {},
-          config: {} as any,
-        }),
-      );
-
-      const result = await service.addTracker(
-        userId,
-        url,
-        { username: 'testuser' },
-        'channel123',
-        'token123',
-      );
-
-      expect(result).toEqual(mockResponse);
-      expect(httpService.post).toHaveBeenCalledWith('/internal/trackers/add', {
-        userId,
-        url,
-        userData: { username: 'testuser' },
-        channelId: 'channel123',
-        interactionToken: 'token123',
-      });
-    });
-
-    it('should add tracker without optional parameters', async () => {
-      const mockResponse = { added: true };
-
-      httpService.post.mockReturnValue(
-        of({
-          data: mockResponse,
-          status: 200,
-          statusText: 'OK',
-          headers: {},
-          config: {} as any,
-        }),
-      );
-
-      await service.addTracker(userId, url);
-
-      expect(httpService.post).toHaveBeenCalledWith('/internal/trackers/add', {
-        userId,
-        url,
-        userData: undefined,
-        channelId: undefined,
-        interactionToken: undefined,
-      });
-    });
-
-    it('should throw ApiError when response has no data', async () => {
-      httpService.post.mockReturnValue(
-        of({
-          data: null,
-          status: 200,
-          statusText: 'OK',
-          headers: {},
-          config: {} as any,
-        }),
-      );
-
-      await expect(service.addTracker(userId, url)).rejects.toThrow(ApiError);
-    });
-  });
-
-  describe('processTrackers', () => {
-    const guildId = '123456789012345678';
-
-    it('should process trackers successfully when API responds successfully', async () => {
-      const mockResponse = {
-        processed: 5,
-        trackers: ['tracker1', 'tracker2', 'tracker3', 'tracker4', 'tracker5'],
-      };
-
-      httpService.post.mockReturnValue(
-        of({
-          data: mockResponse,
-          status: 200,
-          statusText: 'OK',
-          headers: {},
-          config: {} as any,
-        }),
-      );
-
-      const result = await service.processTrackers(guildId);
-
-      expect(result).toEqual(mockResponse);
-      expect(httpService.post).toHaveBeenCalledWith(
-        '/internal/trackers/process',
-        {
-          guildId,
-        },
-      );
-    });
-
-    it('should throw ApiError when response has no data', async () => {
-      httpService.post.mockReturnValue(
-        of({
-          data: null,
-          status: 200,
-          statusText: 'OK',
-          headers: {},
-          config: {} as any,
-        }),
-      );
-
-      await expect(service.processTrackers(guildId)).rejects.toThrow(ApiError);
-    });
-
-    it('should transform AxiosError to ApiError on failure', async () => {
-      const axiosError = {
-        response: {
-          status: 404,
-          data: { message: 'Guild not found', code: 'GUILD_NOT_FOUND' },
-        },
-        isAxiosError: true,
-      } as AxiosError;
-
-      httpService.post.mockReturnValue(throwError(() => axiosError));
-
-      const error = await service
-        .processTrackers(guildId)
-        .catch((e) => e as ApiError);
-      expect(error).toBeInstanceOf(ApiError);
-      expect(error.message).toBe('Guild not found');
-    });
-
-    it('should transform network error to ApiError', async () => {
-      const axiosError = {
-        request: {},
-        message: 'Network Error',
-        isAxiosError: true,
-      } as AxiosError;
-
-      httpService.post.mockReturnValue(throwError(() => axiosError));
-
-      const error = await service
-        .processTrackers(guildId)
-        .catch((e) => e as ApiError);
-      expect(error).toBeInstanceOf(ApiError);
-      expect(error.message).toBe('Network Error');
     });
   });
 

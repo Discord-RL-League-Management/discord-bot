@@ -8,12 +8,21 @@ import {
   PermissionFlagsBits,
 } from 'discord.js';
 import { PermissionMetadata } from '../permission-metadata.interface';
+import { AppLogger } from '../../common/app-logger.service';
 
 describe('PermissionValidatorService', () => {
   let service: PermissionValidatorService;
   let apiService: jest.Mocked<ApiService>;
   let configService: jest.Mocked<ConfigService>;
   let module: TestingModule;
+
+  const mockLogger = {
+    log: jest.fn(),
+    error: jest.fn(),
+    warn: jest.fn(),
+    debug: jest.fn(),
+    setContext: jest.fn(),
+  };
 
   const mockInteraction = {
     user: { id: '123456789012345678' },
@@ -45,6 +54,10 @@ describe('PermissionValidatorService', () => {
     module = await Test.createTestingModule({
       providers: [
         PermissionValidatorService,
+        {
+          provide: AppLogger,
+          useValue: mockLogger,
+        },
         {
           provide: ApiService,
           useValue: mockApiService,

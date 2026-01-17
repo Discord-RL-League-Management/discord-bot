@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import {
   ChatInputCommandInteraction,
   PermissionFlagsBits,
@@ -8,6 +8,7 @@ import {
 import { ApiService } from '../../api/api.service';
 import { ConfigService } from '../../config/config.service';
 import { PermissionMetadata } from '../permission-metadata.interface';
+import { AppLogger } from '../../common/app-logger.service';
 
 /**
  * ValidationResult - Result of permission validation
@@ -25,12 +26,13 @@ export interface ValidationResult {
  */
 @Injectable()
 export class PermissionValidatorService {
-  private readonly logger = new Logger(PermissionValidatorService.name);
-
   constructor(
+    private readonly logger: AppLogger,
     private readonly apiService: ApiService,
     private readonly configService: ConfigService,
-  ) {}
+  ) {
+    this.logger.setContext(PermissionValidatorService.name);
+  }
 
   /**
    * Validate if user has permission to execute command

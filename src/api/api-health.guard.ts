@@ -2,10 +2,10 @@ import {
   CanActivate,
   ExecutionContext,
   Injectable,
-  Logger,
   ServiceUnavailableException,
 } from '@nestjs/common';
 import { ApiHealthService } from './api-health.service';
+import { AppLogger } from '../common/app-logger.service';
 
 /**
  * ApiHealthGuard - Guard that checks API availability before allowing requests
@@ -13,9 +13,12 @@ import { ApiHealthService } from './api-health.service';
  */
 @Injectable()
 export class ApiHealthGuard implements CanActivate {
-  private readonly logger = new Logger(ApiHealthGuard.name);
-
-  constructor(private readonly apiHealthService: ApiHealthService) {}
+  constructor(
+    private readonly logger: AppLogger,
+    private readonly apiHealthService: ApiHealthService,
+  ) {
+    this.logger.setContext(ApiHealthGuard.name);
+  }
 
   async canActivate(
     // eslint-disable-next-line @typescript-eslint/no-unused-vars

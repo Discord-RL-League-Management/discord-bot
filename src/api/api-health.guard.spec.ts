@@ -2,12 +2,21 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { ExecutionContext, ServiceUnavailableException } from '@nestjs/common';
 import { ApiHealthGuard } from './api-health.guard';
 import { ApiHealthService } from './api-health.service';
+import { AppLogger } from '../common/app-logger.service';
 
 describe('ApiHealthGuard', () => {
   let guard: ApiHealthGuard;
   let apiHealthService: jest.Mocked<ApiHealthService>;
   let mockExecutionContext: ExecutionContext;
   let module: TestingModule;
+
+  const mockLogger = {
+    log: jest.fn(),
+    error: jest.fn(),
+    warn: jest.fn(),
+    debug: jest.fn(),
+    setContext: jest.fn(),
+  };
 
   beforeEach(async () => {
     const mockApiHealthService = {
@@ -17,6 +26,10 @@ describe('ApiHealthGuard', () => {
     module = await Test.createTestingModule({
       providers: [
         ApiHealthGuard,
+        {
+          provide: AppLogger,
+          useValue: mockLogger,
+        },
         {
           provide: ApiHealthService,
           useValue: mockApiHealthService,

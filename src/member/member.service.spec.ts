@@ -1,5 +1,4 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { Logger } from '@nestjs/common';
 import {
   GuildMember,
   PartialGuildMember,
@@ -11,6 +10,7 @@ import {
 import { MemberService } from './member.service';
 import { ApiService } from '../api/api.service';
 import { ApiError } from '../api/api-error.interface';
+import { AppLogger } from '../common/app-logger.service';
 
 describe('MemberService', () => {
   let service: MemberService;
@@ -77,6 +77,14 @@ describe('MemberService', () => {
     } as unknown as PartialGuildMember;
   };
 
+  const mockLogger = {
+    log: jest.fn(),
+    error: jest.fn(),
+    warn: jest.fn(),
+    debug: jest.fn(),
+    setContext: jest.fn(),
+  };
+
   beforeEach(async () => {
     mockApiService.createGuildMember.mockClear();
     mockApiService.updateGuildMember.mockClear();
@@ -85,6 +93,10 @@ describe('MemberService', () => {
     module = await Test.createTestingModule({
       providers: [
         MemberService,
+        {
+          provide: AppLogger,
+          useValue: mockLogger,
+        },
         {
           provide: ApiService,
           useValue: mockApiService,
@@ -96,8 +108,8 @@ describe('MemberService', () => {
     apiService = module.get(ApiService);
 
     loggerSpy = {
-      log: jest.spyOn(Logger.prototype, 'log').mockImplementation(),
-      error: jest.spyOn(Logger.prototype, 'error').mockImplementation(),
+      log: jest.spyOn(mockLogger, 'log'),
+      error: jest.spyOn(mockLogger, 'error'),
     };
 
     jest.clearAllMocks();

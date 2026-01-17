@@ -3,10 +3,19 @@ import { PermissionLoggerService } from './permission-logger.service';
 import { ChatInputCommandInteraction } from 'discord.js';
 import { ValidationResult } from '../permission-validator/permission-validator.service';
 import { PermissionMetadata } from '../permission-metadata.interface';
+import { AppLogger } from '../../common/app-logger.service';
 
 describe('PermissionLoggerService', () => {
   let service: PermissionLoggerService;
   let module: TestingModule;
+
+  const mockLogger = {
+    log: jest.fn(),
+    error: jest.fn(),
+    warn: jest.fn(),
+    debug: jest.fn(),
+    setContext: jest.fn(),
+  };
 
   const mockInteraction = {
     user: { id: '123456789012345678' },
@@ -17,7 +26,13 @@ describe('PermissionLoggerService', () => {
 
   beforeEach(async () => {
     module = await Test.createTestingModule({
-      providers: [PermissionLoggerService],
+      providers: [
+        PermissionLoggerService,
+        {
+          provide: AppLogger,
+          useValue: mockLogger,
+        },
+      ],
     }).compile();
 
     service = module.get<PermissionLoggerService>(PermissionLoggerService);
@@ -41,13 +56,16 @@ describe('PermissionLoggerService', () => {
 
       service.logCommandExecution(mockInteraction, result, metadata);
 
-      expect(logSpy).toHaveBeenCalledWith('Command execution: test-command', {
-        userId: '123456789012345678',
-        guildId: '987654321098765432',
-        channelId: '111111111111111111',
-        allowed: true,
-        category: 'admin',
-      });
+      expect(logSpy).toHaveBeenCalledWith(
+        'Permission validation: test-command',
+        {
+          userId: '123456789012345678',
+          guildId: '987654321098765432',
+          channelId: '111111111111111111',
+          allowed: true,
+          category: 'admin',
+        },
+      );
     });
 
     it('should log command execution with denied result', () => {
@@ -61,13 +79,16 @@ describe('PermissionLoggerService', () => {
 
       service.logCommandExecution(mockInteraction, result, metadata);
 
-      expect(logSpy).toHaveBeenCalledWith('Command execution: test-command', {
-        userId: '123456789012345678',
-        guildId: '987654321098765432',
-        channelId: '111111111111111111',
-        allowed: false,
-        category: 'admin',
-      });
+      expect(logSpy).toHaveBeenCalledWith(
+        'Permission validation: test-command',
+        {
+          userId: '123456789012345678',
+          guildId: '987654321098765432',
+          channelId: '111111111111111111',
+          allowed: false,
+          category: 'admin',
+        },
+      );
     });
 
     it('should use default category when metadata category is not provided', () => {
@@ -77,13 +98,16 @@ describe('PermissionLoggerService', () => {
 
       service.logCommandExecution(mockInteraction, result);
 
-      expect(logSpy).toHaveBeenCalledWith('Command execution: test-command', {
-        userId: '123456789012345678',
-        guildId: '987654321098765432',
-        channelId: '111111111111111111',
-        allowed: true,
-        category: 'public',
-      });
+      expect(logSpy).toHaveBeenCalledWith(
+        'Permission validation: test-command',
+        {
+          userId: '123456789012345678',
+          guildId: '987654321098765432',
+          channelId: '111111111111111111',
+          allowed: true,
+          category: 'public',
+        },
+      );
     });
 
     it('should handle DM interactions', () => {
@@ -98,13 +122,16 @@ describe('PermissionLoggerService', () => {
 
       service.logCommandExecution(dmInteraction, result);
 
-      expect(logSpy).toHaveBeenCalledWith('Command execution: test-command', {
-        userId: '123456789012345678',
-        guildId: 'DM',
-        channelId: 'unknown',
-        allowed: true,
-        category: 'public',
-      });
+      expect(logSpy).toHaveBeenCalledWith(
+        'Permission validation: test-command',
+        {
+          userId: '123456789012345678',
+          guildId: 'DM',
+          channelId: 'unknown',
+          allowed: true,
+          category: 'public',
+        },
+      );
     });
   });
 

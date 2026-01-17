@@ -2,13 +2,13 @@ import {
   CanActivate,
   ExecutionContext,
   Injectable,
-  Logger,
   ForbiddenException,
 } from '@nestjs/common';
-import { ChatInputCommandInteraction } from 'discord.js';
+import { ChatInputCommandInteraction, MessageFlags } from 'discord.js';
 import { PermissionValidatorService } from '../permission-validator/permission-validator.service';
 import { PermissionLoggerService } from '../permission-logger/permission-logger.service';
 import { PermissionMetadata } from '../permission-metadata.interface';
+import { AppLogger } from '../../common/app-logger.service';
 
 /**
  * PermissionGuard - Guard that validates permissions before command execution
@@ -16,26 +16,18 @@ import { PermissionMetadata } from '../permission-metadata.interface';
  */
 @Injectable()
 export class PermissionGuard implements CanActivate {
-  private readonly logger = new Logger(PermissionGuard.name);
-
   // Command metadata mapping - maps command names to permission requirements
   private readonly commandMetadata: Map<string, PermissionMetadata> = new Map([
-    ['process-trackers', { requiresSuperUser: true, requiresGuild: true }],
-    [
-      'config',
-      {
-        requiredPermissions: 'Administrator' as const,
-        requiresGuild: true,
-        category: 'admin',
-      },
-    ],
     // Add more commands as needed
   ]);
 
   constructor(
+    private readonly logger: AppLogger,
     private readonly permissionValidator: PermissionValidatorService,
     private readonly permissionLogger: PermissionLoggerService,
-  ) {}
+  ) {
+    this.logger.setContext(PermissionGuard.name);
+  }
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const interaction = this.getInteraction(context);
@@ -129,12 +121,12 @@ export class PermissionGuard implements CanActivate {
       if (interaction.replied || interaction.deferred) {
         await interaction.followUp({
           content: message,
-          ephemeral: true,
+          flags: MessageFlags.Ephemeral,
         });
       } else {
         await interaction.reply({
           content: message,
-          ephemeral: true,
+          flags: MessageFlags.Ephemeral,
         });
       }
     } catch (error: unknown) {

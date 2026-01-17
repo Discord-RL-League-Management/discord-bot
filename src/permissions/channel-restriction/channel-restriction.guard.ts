@@ -2,12 +2,12 @@ import {
   CanActivate,
   ExecutionContext,
   Injectable,
-  Logger,
   ForbiddenException,
   Type,
 } from '@nestjs/common';
-import { ChatInputCommandInteraction } from 'discord.js';
+import { ChatInputCommandInteraction, MessageFlags } from 'discord.js';
 import { ApiService } from '../../api/api.service';
+import { AppLogger } from '../../common/app-logger.service';
 
 /**
  * ChannelRestrictionGuard - Guard that validates commands execute in allowed channels
@@ -24,9 +24,12 @@ export class ChannelRestrictionGuard {
   static create(commandType: 'staff' | 'public' | 'test'): Type<CanActivate> {
     @Injectable()
     class ChannelRestrictionGuardImpl implements CanActivate {
-      private readonly logger = new Logger(ChannelRestrictionGuardImpl.name);
-
-      constructor(private readonly apiService: ApiService) {}
+      constructor(
+        private readonly logger: AppLogger,
+        private readonly apiService: ApiService,
+      ) {
+        this.logger.setContext(ChannelRestrictionGuardImpl.name);
+      }
 
       async canActivate(context: ExecutionContext): Promise<boolean> {
         const interaction = this.getInteraction(context);
@@ -164,12 +167,12 @@ export class ChannelRestrictionGuard {
           if (interaction.replied || interaction.deferred) {
             await interaction.followUp({
               content: reason,
-              ephemeral: true,
+              flags: MessageFlags.Ephemeral,
             });
           } else {
             await interaction.reply({
               content: reason,
-              ephemeral: true,
+              flags: MessageFlags.Ephemeral,
             });
           }
         } catch (error: unknown) {

@@ -1,13 +1,17 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { On, Once, Context } from 'necord';
 import type { ContextOf } from 'necord';
 import { GuildSyncService } from '../guild/guild-sync.service';
+import { AppLogger } from '../common/app-logger.service';
 
 @Injectable()
 export class DiscordService {
-  private readonly logger = new Logger(DiscordService.name);
-
-  constructor(private readonly guildSyncService: GuildSyncService) {}
+  constructor(
+    private readonly logger: AppLogger,
+    private readonly guildSyncService: GuildSyncService,
+  ) {
+    this.logger.setContext(DiscordService.name);
+  }
 
   @Once('clientReady')
   public async onReady(@Context() [client]: ContextOf<'clientReady'>) {

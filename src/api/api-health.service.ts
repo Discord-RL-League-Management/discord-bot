@@ -1,5 +1,6 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { ApiService } from './api.service';
+import { AppLogger } from '../common/app-logger.service';
 
 /**
  * ApiHealthService - Service for checking API health status
@@ -7,9 +8,12 @@ import { ApiService } from './api.service';
  */
 @Injectable()
 export class ApiHealthService {
-  private readonly logger = new Logger(ApiHealthService.name);
-
-  constructor(private readonly apiService: ApiService) {}
+  constructor(
+    private readonly apiService: ApiService,
+    private readonly logger: AppLogger,
+  ) {
+    this.logger.setContext(ApiHealthService.name);
+  }
 
   /**
    * Check API health with timeout handling

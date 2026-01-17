@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
 import { firstValueFrom } from 'rxjs';
 import { AxiosError } from 'axios';
@@ -7,6 +7,7 @@ import { ApiError } from './api-error.interface';
 import { HealthCheckResponse } from './health-check-response.interface';
 import { CreateGuildDto } from './dto/create-guild.dto';
 import { validateDiscordId } from '../common/utils/discord-id.validator';
+import { AppLogger } from '../common/app-logger.service';
 
 /**
  * ApiService - Single Responsibility: HTTP communication with league-api only
@@ -16,12 +17,13 @@ import { validateDiscordId } from '../common/utils/discord-id.validator';
  */
 @Injectable()
 export class ApiService {
-  private readonly logger = new Logger(ApiService.name);
-
   constructor(
     private readonly httpService: HttpService,
     private readonly configService: ConfigService,
-  ) {}
+    private readonly logger: AppLogger,
+  ) {
+    this.logger.setContext(ApiService.name);
+  }
 
   /**
    * Type guard to check if error is an AxiosError
@@ -460,106 +462,6 @@ export class ApiService {
       return response.data;
     } catch (error: unknown) {
       this.logger.error(`Failed to get guild settings ${guildId}:`, error);
-      this.transformError(error);
-    }
-  }
-
-  /**
-   * Register multiple trackers for a user (1-4 trackers)
-   * Single Responsibility: HTTP call to register multiple trackers
-   */
-  async registerTrackers(
-    userId: string,
-    urls: string[],
-    userData?: {
-      username: string;
-      globalName?: string;
-      avatar?: string;
-    },
-    channelId?: string,
-    interactionToken?: string,
-  ): Promise<any> {
-    try {
-      const response = await firstValueFrom(
-        this.httpService.post('/internal/trackers/register-multiple', {
-          userId,
-          urls,
-          userData,
-          channelId,
-          interactionToken,
-        }),
-      );
-      if (!response.data) {
-        throw new ApiError('API returned no data', response.status, 'NO_DATA');
-      }
-      return response.data;
-    } catch (error: unknown) {
-      this.logger.error(
-        `Failed to register trackers for user ${userId}:`,
-        error,
-      );
-      this.transformError(error);
-    }
-  }
-
-  /**
-   * Add an additional tracker for a user
-   * Single Responsibility: HTTP call to add tracker
-   */
-  async addTracker(
-    userId: string,
-    url: string,
-    userData?: {
-      username: string;
-      globalName?: string;
-      avatar?: string;
-    },
-    channelId?: string,
-    interactionToken?: string,
-  ): Promise<any> {
-    try {
-      const response = await firstValueFrom(
-        this.httpService.post('/internal/trackers/add', {
-          userId,
-          url,
-          userData,
-          channelId,
-          interactionToken,
-        }),
-      );
-      if (!response.data) {
-        throw new ApiError('API returned no data', response.status, 'NO_DATA');
-      }
-      return response.data;
-    } catch (error: unknown) {
-      this.logger.error(`Failed to add tracker for user ${userId}:`, error);
-      this.transformError(error);
-    }
-  }
-
-  /**
-   * Process trackers for a guild - triggers API to scrape/process tracker data
-   * Single Responsibility: HTTP call to process trackers for a guild
-   */
-  async processTrackers(guildId: string): Promise<{
-    processed: number;
-    trackers: string[];
-  }> {
-    try {
-      const response = await firstValueFrom(
-        this.httpService.post('/internal/trackers/process', {
-          guildId,
-        }),
-      );
-      if (!response.data) {
-        throw new ApiError('API returned no data', response.status, 'NO_DATA');
-      }
-      return response.data as { processed: number; trackers: string[] };
-    } catch (error: unknown) {
-      this.logger.error(
-        `Failed to process trackers for guild ${guildId}:`,
-        error,
-      );
       this.transformError(error);
     }
   }

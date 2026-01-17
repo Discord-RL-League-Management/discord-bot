@@ -3,12 +3,12 @@ import {
   ExecutionContext,
   Injectable,
   NestInterceptor,
-  Logger,
   ForbiddenException,
   OnApplicationShutdown,
 } from '@nestjs/common';
 import { Observable, throwError } from 'rxjs';
-import { ChatInputCommandInteraction } from 'discord.js';
+import { ChatInputCommandInteraction, MessageFlags } from 'discord.js';
+import { AppLogger } from '../../../common/app-logger.service';
 
 /**
  * CooldownInterceptor - Prevents command spam by enforcing cooldown periods
@@ -18,9 +18,12 @@ import { ChatInputCommandInteraction } from 'discord.js';
 export class CooldownInterceptor
   implements NestInterceptor, OnApplicationShutdown
 {
-  private readonly logger = new Logger(CooldownInterceptor.name);
   private readonly cooldowns = new Map<string, number>();
   private readonly cooldownDuration = 3000; // 3 seconds default cooldown
+
+  constructor(private readonly logger: AppLogger) {
+    this.logger.setContext(CooldownInterceptor.name);
+  }
 
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
     const interaction = this.getInteraction(context);
@@ -43,7 +46,7 @@ export class CooldownInterceptor
         interaction
           .followUp({
             content: `⏱️ Please wait ${remaining} seconds before using this command again.`,
-            ephemeral: true,
+            flags: MessageFlags.Ephemeral,
           })
           .catch((err) => {
             this.logger.error('Failed to send cooldown message:', err);
@@ -52,7 +55,7 @@ export class CooldownInterceptor
         interaction
           .reply({
             content: `⏱️ Please wait ${remaining} seconds before using this command again.`,
-            ephemeral: true,
+            flags: MessageFlags.Ephemeral,
           })
           .catch((err) => {
             this.logger.error('Failed to send cooldown message:', err);

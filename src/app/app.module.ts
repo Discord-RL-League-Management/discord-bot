@@ -3,6 +3,7 @@ import { ThrottlerModule } from '@nestjs/throttler';
 import { AppController } from '../app.controller';
 import { AppService } from '../app.service';
 import { ConfigModule } from '../config/config.module';
+import { LoggerModule } from '../common/logger.module';
 import { ApiModule } from '../api/api.module';
 import { DiscordModule } from '../discord/discord.module';
 import { GuildModule } from '../guild/guild.module';
@@ -12,6 +13,7 @@ import { CommandsModule } from '../commands/commands.module';
 @Module({
   imports: [
     ConfigModule,
+    LoggerModule,
     ApiModule,
     DiscordModule,
     GuildModule,
