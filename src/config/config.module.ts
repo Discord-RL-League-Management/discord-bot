@@ -22,7 +22,17 @@ export function validate(config: Record<string, unknown>) {
     NestConfigModule.forRoot({
       isGlobal: true,
       validate,
-      envFilePath: ['.env'],
+      // Load environment-specific .env files with fallback
+      // Priority: .env.{NODE_ENV}.local > .env.{NODE_ENV} > .env.local > .env
+      envFilePath: [
+        `.env.${process.env.NODE_ENV || 'development'}.local`,
+        `.env.${process.env.NODE_ENV || 'development'}`,
+        '.env.local',
+        '.env',
+      ],
+      // In production, ignore .env files entirely - use system environment variables only
+      // This follows NestJS best practices for cloud deployments (Railway, Docker, etc.)
+      ignoreEnvFile: process.env.NODE_ENV === 'production',
     }),
   ],
   providers: [ConfigService],

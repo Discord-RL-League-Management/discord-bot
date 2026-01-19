@@ -6,6 +6,7 @@ import { PermissionLoggerService } from './permission-logger/permission-logger.s
 import { PermissionGuard } from './permission/permission.guard';
 import { StaffOnlyGuard } from './staff-only/staff-only.guard';
 import { TestCommandGuard } from './test-command/test-command.guard';
+import { E2ERestrictionGuard } from './e2e-restriction/e2e-restriction.guard';
 
 @Module({
   imports: [ApiModule, ConfigModule],
@@ -15,6 +16,7 @@ import { TestCommandGuard } from './test-command/test-command.guard';
     PermissionGuard,
     StaffOnlyGuard,
     TestCommandGuard,
+    E2ERestrictionGuard,
   ],
   exports: [
     PermissionGuard,
@@ -22,6 +24,7 @@ import { TestCommandGuard } from './test-command/test-command.guard';
     PermissionLoggerService,
     StaffOnlyGuard,
     TestCommandGuard,
+    E2ERestrictionGuard,
   ],
 })
 export class PermissionsModule {}

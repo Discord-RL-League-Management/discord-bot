@@ -1,18 +1,25 @@
 import { Module } from '@nestjs/common';
 import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { ApiModule } from '../api/api.module';
+import { ConfigModule } from '../config/config.module';
 import { PermissionsModule } from '../permissions/permissions.module';
 import { PermissionGuard } from '../permissions/permission/permission.guard';
 import { HelpCommand } from './help.command';
+import { RegisterCommand } from './register.command';
+import { RegisterUserCommand } from './register-user.command';
+import { CalculateMmrAscendancyCommand } from './calculate-mmr-ascendancy.command';
 import { CooldownInterceptor } from './interceptors/cooldown/cooldown.interceptor';
 import { CommandLoggerInterceptor } from './interceptors/command-logger/command-logger.interceptor';
 import { CommandLoggerService } from './interceptors/command-logger/command-logger.service';
 import { ErrorHandlingInterceptor } from './interceptors/error-handling/error-handling.interceptor';
 
 @Module({
-  imports: [ApiModule, PermissionsModule],
+  imports: [ApiModule, ConfigModule, PermissionsModule],
   providers: [
     HelpCommand,
+    RegisterCommand,
+    RegisterUserCommand,
+    CalculateMmrAscendancyCommand,
     CommandLoggerService,
     // Add interceptors explicitly to providers so TypeScript can properly infer dependency types
     CooldownInterceptor,

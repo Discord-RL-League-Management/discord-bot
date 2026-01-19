@@ -8,10 +8,10 @@
   "scripts": {
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
-    "start": "nest start",
-    "start:dev": "nest start --watch",
-    "start:debug": "nest start --debug --watch",
-    "start:prod": "node dist/main",
+    "start": "NODE_ENV=development nest start",
+    "start:dev": "NODE_ENV=development nest start --watch",
+    "start:debug": "NODE_ENV=development nest start --debug --watch",
+    "start:prod": "NODE_ENV=production node dist/main",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
     "test": "jest",
     "test:watch": "jest --watch",
@@ -22,10 +22,12 @@
     "commitlint": "commitlint --edit",
     "post-work": "bash .cursor/scripts/post-work-pipeline.sh",
     "docker:build": "docker build -t discord-bot .",
-    "docker:run": "docker run -d --name discord-bot --network league-api_default -p 3001:3001 --env-file .env discord-bot",
+    "docker:run": "docker run -d --name discord-bot --network league-api_default -p 3001:3001 --env-file .env.development discord-bot",
+    "docker:run:prod": "docker run -d --name discord-bot --network league-api_default -p 3001:3001 --env-file .env.production discord-bot",
     "docker:stop": "docker stop discord-bot && docker rm discord-bot",
     "docker:logs": "docker logs -f discord-bot",
-    "docker:start": "pnpm docker:build && pnpm docker:run"
+    "docker:start": "pnpm docker:build && pnpm docker:run",
+    "docker:start:prod": "pnpm docker:build && pnpm docker:run:prod"
   },
   "dependencies": {
     "@nestjs/axios": "^4.0.1",
@@ -36,6 +38,7 @@
     "@nestjs/platform-express": "^11.0.1",
     "@nestjs/throttler": "^6.5.0",
     "axios": "^1.13.2",
+    "class-transformer": "^0.5.1",
     "class-validator": "^0.14.3",
     "discord.js": "^14.25.1",
     "necord": "^6.12.0",
