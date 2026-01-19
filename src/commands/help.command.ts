@@ -17,6 +17,10 @@ export class HelpCommand {
   // Static list of commands - maintain this when adding new commands
   private readonly commands = [
     { name: 'help', description: 'Show all available bot commands' },
+    {
+      name: 'calculate-mmr-ascendancy',
+      description: 'Calculate MMR using ASCENDANCY algorithm',
+    },
   ];
 
   constructor(private readonly logger: AppLogger) {

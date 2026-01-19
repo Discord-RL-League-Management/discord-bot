@@ -72,10 +72,12 @@ describe('HelpCommand', () => {
       const replyCall = (interaction.reply as jest.Mock).mock.calls[0][0];
       const embed = replyCall.embeds[0];
       expect(embed.data.fields).toBeDefined();
-      expect(embed.data.fields.length).toBe(1);
+      expect(embed.data.fields.length).toBe(2);
 
       const commandNames = embed.data.fields.map((field: any) => field.name);
-      expect(commandNames).toEqual(expect.arrayContaining(['/help']));
+      expect(commandNames).toEqual(
+        expect.arrayContaining(['/help', '/calculate-mmr-ascendancy']),
+      );
     });
 
     it('should include command descriptions', async () => {

@@ -6,6 +6,8 @@ import { ConfigService } from '../config/config.service';
 import { ApiError } from './api-error.interface';
 import { HealthCheckResponse } from './health-check-response.interface';
 import { CreateGuildDto } from './dto/create-guild.dto';
+import { CalculateMmrDto } from './dto/calculate-mmr.dto';
+import { CalculatorResponse } from './calculator-response.interface';
 import { validateDiscordId } from '../common/utils/discord-id.validator';
 import { AppLogger } from '../common/app-logger.service';
 
@@ -462,6 +464,34 @@ export class ApiService {
       return response.data;
     } catch (error: unknown) {
       this.logger.error(`Failed to get guild settings ${guildId}:`, error);
+      this.transformError(error);
+    }
+  }
+
+  /**
+   * Calculate MMR using the calculator API
+   * Single Responsibility: HTTP call to calculate MMR
+   */
+  async calculateMmr(
+    calculateData: CalculateMmrDto,
+  ): Promise<CalculatorResponse> {
+    validateDiscordId(calculateData.guildId);
+    try {
+      const response = await firstValueFrom(
+        this.httpService.post<CalculatorResponse>(
+          '/api/calculator',
+          calculateData,
+        ),
+      );
+      if (!response.data) {
+        throw new ApiError('API returned no data', response.status, 'NO_DATA');
+      }
+      return response.data;
+    } catch (error: unknown) {
+      this.logger.error(
+        `Failed to calculate MMR for guild ${calculateData.guildId}:`,
+        error,
+      );
       this.transformError(error);
     }
   }
